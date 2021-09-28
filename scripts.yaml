@@ -1,0 +1,12 @@
+unstable: true
+allow:
+  - net
+  - read
+  - write
+  - env
+  - run
+scripts:
+  bot:
+    cmd: "deno run ./src/bot/main.ts"
+  manga:
+    cmd: "deno run ./src/interface/main.ts"
