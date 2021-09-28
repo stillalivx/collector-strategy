@@ -18,8 +18,8 @@ class CollectorStrategy {
     const trelloList = trello.list(this.listId);
 
     const series: Product[][] = [];
-    const serieWithLessThan: MangaType[][] = [];
-    const serieWithMoreThan: MangaType[][] = [];
+    const serieWithLessThan: Product[][] = [];
+    const serieWithMoreThan: Product[]][] = [];
     const sortedCards: Product[] = [];
 
     let totalWithLessThan = 0;

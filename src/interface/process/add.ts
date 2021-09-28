@@ -10,8 +10,8 @@ import type { EnumStore, Store } from "../../types.ts";
 async function add() {
   const args = parse(Deno.args);
   const searchValue = args.a || args.add;
-  const { TRELLO_KEY, TRELLO_TOKEN } = getTrelloEnv();
-  const collectorStrategy = new CollectorStrategy(TRELLO_KEY, TRELLO_TOKEN);
+
+  const collectorStrategy = new CollectorStrategy();
 
   let store = args.s || args.store;
   let storeName;
@@ -76,7 +76,7 @@ async function add() {
     prompt(Colors.blue("Último número adquirido:"), "") as string,
   );
 
-  if (isNaN(userLastNumber)) {
+  if (isNaN(userSerieLastNumber)) {
     return;
   }
 
@@ -108,22 +108,22 @@ async function add() {
     lastCheck: new Date(),
   };
 
-  const dbResponse = await SerieModel.create(serie);
+  const dbResponse = await SerieModel.add(serie);
 
   console.log(`💾 ${Colors.green("La serie se guardó con éxito...")}`);
   console.log(`📝 ${Colors.green("Actualizando lista...")}`);
 
-  const newProductsPublished = await mangaStrategy.getNextSeries([product]);
+  const newProductsPublished = await collectorStrategy.getNextSeries([serie]);
 
-  if (nextMangas.length) {
-    await ProductModel
-      .where({ id: dbResponse.lastInsertId as number })
+  if (newProductsPublished.length) {
+    await SerieModel
+      .where({ id: dbResponse.lastInsertId })
       .update({
-        lastNumber: nextMangas[nextMangas.length - 1].tome as number,
+        lastNumber: newProductsPublished[newProductsPublished.length - 1].number,
         lastCheck: new Date(),
       });
 
-    await mangaStrategy.sortMangaList(nextMangas);
+    await collectorStrategy.sortMangaList(newProductsPublished);
   }
 
   await closeDatabase(database);
