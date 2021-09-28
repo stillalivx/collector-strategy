@@ -1,22 +1,24 @@
 import { Colors, Database, SQLite3Connector } from "../../deps.ts";
 
-import Manga from "../../database/models/Manga.ts";
+import SerieModel from "../../database/models/Serie.ts";
 
 async function list() {
   console.log(`💾 ${Colors.green("Obteniendo las series enlistadas...\n")}`);
 
-  const connector = new SQLite3Connector({ filepath: "./etc/mangaStrategyDatabase.sqlite" });
+  const connector = new SQLite3Connector({
+    filepath: "./etc/mangaStrategyDatabase.sqlite",
+  });
   const db = new Database(connector);
 
-  db.link([Manga]);
+  db.link([SerieModel]);
 
   await db.sync();
 
-  const mangas = await Manga.all();
+  const series = await SerieModel.all();
 
   await db.close();
 
-  console.log(mangas);
+  console.log(series);
 }
 
 export default list;

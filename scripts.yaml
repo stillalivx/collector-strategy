@@ -8,5 +8,5 @@ allow:
 scripts:
   bot:
     cmd: "deno run ./src/bot/main.ts"
-  manga:
+  collection:
     cmd: "deno run ./src/interface/main.ts"

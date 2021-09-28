@@ -1,25 +1,24 @@
 import { Colors, parse } from "../../deps.ts";
 import { getTrelloEnv } from "../../utils/getEnv.ts";
-import { connectDatabase, closeDatabase } from "../../database/database.ts";
-import Manga from "../../database/models/Manga.ts";
+import { closeDatabase, connectDatabase } from "../../database/database.ts";
+import SerieModel from "../../database/models/Serie.ts";
 import Panini from "../../scrapping/Panini.js";
-import MangaStrategy from "../../bot/MangaStrategy.ts";
+import CollectorStrategy from "../../bot/CollectorStrategy.ts";
 
 import type { EnumStore, Store } from "../../types.ts";
 
 async function add() {
   const args = parse(Deno.args);
-  const tomeName = args.a || args.add;
+  const searchValue = args.a || args.add;
   const { TRELLO_KEY, TRELLO_TOKEN } = getTrelloEnv();
-  const mangaStrategy = new MangaStrategy(TRELLO_KEY, TRELLO_TOKEN);
-  
+  const collectorStrategy = new CollectorStrategy(TRELLO_KEY, TRELLO_TOKEN);
 
   let store = args.s || args.store;
   let storeName;
   let storeScrapping: Store;
   let storeEnumValue: EnumStore;
 
-  if (!tomeName || typeof tomeName !== "string") {
+  if (!searchValue || typeof searchValue !== "string") {
     console.log(`❌ ${Colors.red("No se ha declarado el nombre de la serie")}`);
     return;
   }
@@ -44,9 +43,9 @@ async function add() {
     return;
   }
 
-  console.log(Colors.green(`🔍 Buscando "${tomeName}" en ${storeName}`));
+  console.log(Colors.green(`🔍 Buscando "${searchValue}" en ${storeName}`));
 
-  const searchResults = await storeScrapping.search(tomeName);
+  const searchResults = await storeScrapping.search(searchValue);
 
   if (!searchResults.length) {
     console.log(`❌ ${Colors.red("No se han encontrado resultados")}`);
@@ -55,11 +54,11 @@ async function add() {
 
   console.log(Colors.green(`🔍 Resultados:\n`));
 
-  searchResults.forEach((manga, index) => {
+  searchResults.forEach((product, index) => {
     console.log(
-      `${Colors.blue(`${index}.`)} ${Colors.yellow(manga.serie as string)} ${
-        manga.description
-          ? Colors.gray("- ") + Colors.cyan(manga.description as string)
+      `${Colors.blue(`${index}.`)} ${Colors.yellow(product.name as string)} ${
+        product.description
+          ? Colors.gray("- ") + Colors.cyan(product.description as string)
           : ""
       }`,
     );
@@ -73,17 +72,17 @@ async function add() {
     return;
   }
 
-  const userLastTome = parseInt(
-    prompt(Colors.blue("Último tomo adquirido:"), "") as string,
+  const userSerieLastNumber = parseInt(
+    prompt(Colors.blue("Último número adquirido:"), "") as string,
   );
 
-  if (isNaN(userLastTome)) {
+  if (isNaN(userLastNumber)) {
     return;
   }
 
   console.log(`\n🔍 ${Colors.green("Obteniendo datos adicionales...")}`);
 
-  const seriePage = await storeScrapping.getSerieURL(
+  const serieUrl = await storeScrapping.getProductUrlSerie(
     searchResults[userSerieChoice].url as string,
   );
 
@@ -91,8 +90,8 @@ async function add() {
 
   const database = await connectDatabase();
 
-  const serieExists = await Manga.select("id").where({
-    page: seriePage,
+  const serieExists = await SerieModel.select("id").where({
+    url: serieUrl,
   }).first();
 
   if (serieExists) {
@@ -100,29 +99,30 @@ async function add() {
     return;
   }
 
-  const manga = {
-    name: searchResults[userSerieChoice].serie as string,
-    lastTome: userLastTome,
-    page: seriePage,
+  const serie = {
+    name: searchResults[userSerieChoice].name,
+    description: searchResults[userSerieChoice].description,
+    lastNumber: userSerieLastNumber,
+    url: serieUrl,
     store: storeEnumValue,
     lastCheck: new Date(),
   };
 
-  const dbResponse = await Manga.create(manga);
+  const dbResponse = await SerieModel.create(serie);
 
   console.log(`💾 ${Colors.green("La serie se guardó con éxito...")}`);
   console.log(`📝 ${Colors.green("Actualizando lista...")}`);
 
-  const nextMangas = await mangaStrategy.getNextSeries([manga]);
+  const newProductsPublished = await mangaStrategy.getNextSeries([product]);
 
   if (nextMangas.length) {
-    await Manga
+    await ProductModel
       .where({ id: dbResponse.lastInsertId as number })
       .update({
-        lastTome: nextMangas[nextMangas.length - 1].tome as number,
+        lastNumber: nextMangas[nextMangas.length - 1].tome as number,
         lastCheck: new Date(),
       });
-      
+
     await mangaStrategy.sortMangaList(nextMangas);
   }
 

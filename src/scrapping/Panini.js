@@ -1,159 +1,157 @@
 import { puppeteer } from "../deps.ts";
 
 class Panini {
-  browser = null;
 
-  headless = false;
+  #browser = null;
+
+  #puppeteerConfig = {
+    headless: false
+  };
+
+  #pageConfig = {
+    waitUntil: "load",
+    timeout: 0
+  };
+
+  async #scrappingProducts(page) {
+    const scrappingProducts = await page.evaluate(() => {
+      const products = [];
+      const DOMProducts = document.querySelectorAll(".product");
+
+      DOMProducts.forEach((DOMProduct) => {
+        const product = {
+          name: "",
+          description: "",
+          number: 0,
+          url: "",
+        };
+
+        const DOMDataContainer = DOMProduct.querySelector(".description");
+
+        const name = DOMDataContainer.childNodes[0].childNodes[0]?.textContent
+          .trim();
+        const description =
+          DOMDataContainer.querySelector(".little-desc")?.textContent.trim() ||
+          "";
+        const url = DOMDataContainer.childNodes[0].childNodes[0]?.textContent
+          .trim();
+
+        if (!name || !url) {
+          return;
+        }
+
+        product.description = description;
+
+        if (name.match(/\- \#\d+$/)) {
+          product.name = name.substr(0, name.lastIndexOf("-")).trim();
+          product.number = parseInt(name.substr(name.lastIndexOf("#") + 1).trim());
+        } else if (name.match(/ \#\d+$/)) {
+          product.name = name.substr(0, name.lastIndexOf("#")).trim();
+          product.number = parseInt(name.substr(name.lastIndexOf("#") + 1).trim());
+        } else if (name.match(/N\.\s?\d+$/)) {
+          product.name = name.substr(0, name.lastIndexOf("N.")).trim();
+          product.number = parseInt(name.substr(name.lastIndexOf(".") + 1).trim());
+        } else if (name.match(/Vol\.\s?\d+$/)) {
+          product.name = name.substr(0, name.lastIndexOf("Vol.")).trim();
+          product.number = parseInt(name.substr(name.lastIndexOf(".") + 1).trim());
+        } else {
+          product.name = name;
+        }
+
+        const productAdded = products.find(productInList =>
+          productInList.name === product.name &&
+          productInList.description === product.description
+        );
+
+        if (!productAdded) {
+          products.push(product);
+        }
+      });
+
+      return products;
+    });
+
+    return scrappingProducts;
+  }
+
+  async #scrappingUrlProductSerie(page) {
+    const scrappingUrl = await page.evaluate(() => {
+      return document.querySelectorAll(".cart-actions")[1].childNodes[3].href;
+    });
+
+    return scrappingUrl;
+  }
 
   async openBrowser() {
-    this.browser = await puppeteer.launch({
-      headless: this.headless,
-    });
+    this.#browser = await puppeteer.launch(this.#puppeteerConfig);
   }
 
   async closeBrowser() {
-    if (!this.browser) return;
+    if (!this.#browser) return;
 
-    await this.browser.close();
+    await this.#browser.close();
 
-    this.browser = null;
+    this.#browser = null;
   }
 
-  async search(tomeName) {
-    const browser = this.browser || await puppeteer.launch({
-      headless: this.headless,
-    });
+  async search(productName) {
+    const browser = this.#browser || await puppeteer.launch(this.#puppeteerConfig);
     const page = await browser.newPage();
 
     await page.goto(
-      `https://www.tiendapanini.com.mx/mexico/soluciones/busqueda.aspx?t=${tomeName}&o=1`,
+      `https://www.tiendapanini.com.mx/mexico/soluciones/busqueda.aspx?t=${productName}`,
+      this.#pageConfig
     );
 
-    const mangas = await page.evaluate(() => {
-      const domProductItems = document.querySelectorAll(".product");
-      const mangasList = [];
+    const searchResult = await this.#scrappingProducts(page);
 
-      for (let i = 0; i < domProductItems.length; i++) {
-        const domDescription = domProductItems[i].querySelector(".description");
-
-        const title = domDescription?.childNodes[0].childNodes[0].textContent
-          ?.trim();
-        const url = domDescription?.childNodes[0].childNodes[0].href;
-        const description = domDescription?.querySelector(".little-desc")
-          ?.textContent?.trim();
-
-        if (!title || !url) {
-          continue;
-        }
-
-        const titleRegex = title.match(/.*(?=(( - ))|(?<!- )#\d+)/);
-        let serie;
-
-        if (titleRegex) {
-          serie = titleRegex[0].trim();
-        } else {
-          serie = title;
-        }
-
-        const mangaAdded = mangasList.find((mangaOnList) => {
-          return serie.toLowerCase() === mangaOnList.serie.toLowerCase() &&
-            description.toLowerCase() === mangaOnList.description.toLowerCase();
-        });
-
-        if (!mangaAdded) {
-          mangasList.push({ title, serie, description, url });
-        }
-      }
-
-      return mangasList;
-    });
-
-    if (!this.browser) {
+    if (!this.#browser) {
       await browser.close();
     } else {
       await page.close();
     }
 
-    return mangas;
+    return searchResult;
   }
 
-  async getSerieURL(productUrl) {
-    const browser = this.browser || await puppeteer.launch({
-      headless: this.headless,
-    });
+  async getProductUrlSerie(productUrl) {
+    const browser = this.#browser || await puppeteer.launch(this.#puppeteerConfig);
     const page = await browser.newPage();
 
     await page.goto(productUrl);
 
-    const serieUrl = await page.evaluate(() => {
-      const domActions = document.querySelectorAll(".cart-actions")[1];
-      return domActions.childNodes[3].href;
-    });
+    const url = await this.#scrappingUrl(page);
 
-    if (!this.browser) {
+    if (!this.#browser) {
       await browser.close();
     } else {
       await page.close();
     }
 
-    return serieUrl;
+    return url;
   }
 
-  async getNextTomes(manga) {
-    const browser = this.browser ||  await puppeteer.launch({
-      headless: this.headless,
-    });
+  async getNewSerieProducts(serie) {
+    const browser = this.#browser || await puppeteer.launch(this.#puppeteerConfig);
     const page = await browser.newPage();
 
-    await page.goto(manga.page);
+    await page.goto(product.url, this.#pageConfig);
 
-    const mangaTomes = await page.evaluate(() => {
-      const domProductItems = document.querySelectorAll(".product");
-      const mangasList = [];
+    const seriesProducts = await this.#scrappingProducts(page);
 
-      for (let i = 0; i < domProductItems.length; i++) {
-        const domDescription = domProductItems[i].querySelector(".description");
+    const newSeriesProducts = seriesProducts
+      .filter(product => product.number > serie.lastNumber)
+      .sort((a, b) => a.number - b.number);
 
-        const title = domDescription?.childNodes[0].childNodes[0].textContent
-          ?.trim();
-        const url = domDescription?.childNodes[0].childNodes[0].href;
-
-        if (!title || !url) {
-          continue;
-        }
-
-        const tomeRegex = title.match(/(?<=#)\d+/);
-        const titleRegex = title.match(/.*(?=(( - ))|(?<!- )#\d+)/);
-        let tome;
-        let serie;
-
-        tome = parseInt(tomeRegex);
-
-        if (!tomeRegex || isNaN(tome) || !titleRegex) {
-          continue;
-        }
-
-        serie = titleRegex[0].trim();
-
-        mangasList.push({ serie, tome, url });
-      }
-
-      return mangasList;
-    });
-
-    if (!this.browser) {
+    if (!this.#browser) {
       await browser.close();
     } else {
       await page.close();
     }
 
-    const newTomes = mangaTomes
-      .filter((item) => item.tome > manga.lastTome);
-
-    newTomes.sort((a, b) => a.tome - b.tome);
-
-    return newTomes;
+    return newSeriesProducts;
   }
+  
 }
 
 export default Panini;

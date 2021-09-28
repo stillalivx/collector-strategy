@@ -1,4 +1,4 @@
-import { parse, dotenvConfig } from "../deps.ts";
+import { dotenvConfig, parse } from "../deps.ts";
 
 import list from "./process/list.ts";
 import add from "./process/add.ts";

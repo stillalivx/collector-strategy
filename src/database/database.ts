@@ -1,12 +1,14 @@
 import { Database, SQLite3Connector } from "../deps.ts";
 
-import Manga from "./models/Manga.ts";
+import SerieModel from "./models/Serie.ts";
 
 export async function connectDatabase(): Promise<Database> {
-  const connector = new SQLite3Connector({ filepath: "./etc/mangaStrategyDatabase.sqlite" });
+  const connector = new SQLite3Connector({
+    filepath: "./etc/mangaStrategyDatabase.sqlite",
+  });
   const database = new Database(connector);
 
-  database.link([Manga]);
+  database.link([SerieModel]);
 
   await database.sync();
 

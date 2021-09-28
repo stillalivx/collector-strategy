@@ -10,4 +10,7 @@ export {
 } from "https://deno.land/x/denodb@v1.0.39/mod.ts";
 export { parse } from "https://deno.land/std@0.106.0/flags/mod.ts";
 export * as Colors from "https://deno.land/std@0.106.0/fmt/colors.ts";
-export { Trello, ListComponent } from "https://raw.githubusercontent.com/stillalivx/deno-trello/main/mod.ts";
+export {
+  ListComponent,
+  Trello,
+} from "https://raw.githubusercontent.com/stillalivx/deno-trello/main/mod.ts";
