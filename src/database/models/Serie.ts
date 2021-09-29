@@ -46,7 +46,7 @@ class Serie extends Model {
       url: string;
       store: "panini" | "kamite";
       lastCheck: Date;
-    }
+    },
   ): Promise<QueryDBResponse> {
     return await this.create(serie) as unknown as QueryDBResponse;
   }

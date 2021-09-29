@@ -3,10 +3,9 @@ import Panini from "../scraping/Panini.js";
 import { Trello } from "../deps.ts";
 import { getTrelloEnv } from "../utils/getEnv.ts";
 
-import type { Product, Store, Serie } from "../types.ts";
+import type { Product, Serie, Store } from "../types.ts";
 
 class CollectorStrategy {
-
   private listId = "6130d3ee7345bb23bd03d2e8";
 
   async updateSeriesProducts(series: Serie[]) {
@@ -25,13 +24,11 @@ class CollectorStrategy {
       }
 
       if (newSeriesProducts.length > 1) {
-        notificationMsg = `¡Se ha agregado más de un nuevo producto de ${
-          serie.name
-        } a la lista!`;
+        notificationMsg =
+          `¡Se ha agregado más de un nuevo producto de ${serie.name} a la lista!`;
       } else {
-        notificationMsg = `¡Se ha agregado un nuevo producto de ${
-          serie.name
-        } a la lista!`;
+        notificationMsg =
+          `¡Se ha agregado un nuevo producto de ${serie.name} a la lista!`;
       }
 
       osNotify("CollectorStrategy", notificationMsg);
@@ -192,7 +189,9 @@ class CollectorStrategy {
 
     for (let i = 0; i < sortedCards.length; i++) {
       const card = sortedCards[i];
-      const name = `${card.name}${card.description ? ": " + card.description : ""} - #${card.number}`
+      const name = `${card.name}${
+        card.description ? ": " + card.description : ""
+      } - #${card.number}`;
 
       await trelloList.createCard({
         name,

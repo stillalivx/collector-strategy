@@ -69,7 +69,7 @@ async function add() {
 
   if (isNaN(userSerieChoice)) {
     return;
-  }  
+  }
 
   const userSerieLastNumber = parseInt(
     prompt(Colors.blue("Último número adquirido:"), "") as string,
@@ -82,7 +82,7 @@ async function add() {
   console.log(`\n🔍 ${Colors.green("Obteniendo datos adicionales...")}`);
 
   const serieUrl = await storeScrapping.getProductUrlSerie(
-    searchResults[userSerieChoice].url
+    searchResults[userSerieChoice].url,
   );
 
   console.log(`💾 ${Colors.green("Guardando la información...")}`);
@@ -116,14 +116,15 @@ async function add() {
 
   const newProductsPublished = await storeScrapping.getNewSerieProducts({
     id: dbResponse.lastInsertId,
-    ...serie
+    ...serie,
   });
 
   if (newProductsPublished.length) {
     await SerieModel
       .where({ id: dbResponse.lastInsertId })
       .update({
-        lastNumber: newProductsPublished[newProductsPublished.length - 1].number,
+        lastNumber:
+          newProductsPublished[newProductsPublished.length - 1].number,
         lastCheck: new Date(),
       });
 

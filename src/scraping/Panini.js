@@ -1,16 +1,15 @@
 import { puppeteer } from "../deps.ts";
 
 class Panini {
-
   browser = null;
 
   puppeteerConfig = {
-    headless: true
+    headless: true,
   };
 
   pageConfig = {
     waitUntil: "load",
-    timeout: 0
+    timeout: 0,
   };
 
   async scrappingProducts(page) {
@@ -33,7 +32,8 @@ class Panini {
         const description =
           DOMDataContainer.querySelector(".little-desc")?.textContent.trim() ||
           "";
-        const url = DOMDataContainer.childNodes[0].childNodes[0]?.href.trim() || "";
+        const url = DOMDataContainer.childNodes[0].childNodes[0]?.href.trim() ||
+          "";
 
         if (!name || !url) {
           return;
@@ -44,16 +44,24 @@ class Panini {
 
         if (name.match(/\- \#\d+$/)) {
           product.name = name.substr(0, name.lastIndexOf("-")).trim();
-          product.number = parseInt(name.substr(name.lastIndexOf("#") + 1).trim());
+          product.number = parseInt(
+            name.substr(name.lastIndexOf("#") + 1).trim(),
+          );
         } else if (name.match(/ \#\d+$/)) {
           product.name = name.substr(0, name.lastIndexOf("#")).trim();
-          product.number = parseInt(name.substr(name.lastIndexOf("#") + 1).trim());
+          product.number = parseInt(
+            name.substr(name.lastIndexOf("#") + 1).trim(),
+          );
         } else if (name.match(/N\.\s?\d+$/)) {
           product.name = name.substr(0, name.lastIndexOf("N.")).trim();
-          product.number = parseInt(name.substr(name.lastIndexOf(".") + 1).trim());
+          product.number = parseInt(
+            name.substr(name.lastIndexOf(".") + 1).trim(),
+          );
         } else if (name.match(/Vol\.\s?\d+$/)) {
           product.name = name.substr(0, name.lastIndexOf("Vol.")).trim();
-          product.number = parseInt(name.substr(name.lastIndexOf(".") + 1).trim());
+          product.number = parseInt(
+            name.substr(name.lastIndexOf(".") + 1).trim(),
+          );
         } else {
           product.name = name;
         }
@@ -88,13 +96,14 @@ class Panini {
   }
 
   async search(productName) {
-    const browser = this.browser || await puppeteer.launch(this.puppeteerConfig);
+    const browser = this.browser ||
+      await puppeteer.launch(this.puppeteerConfig);
     const page = await browser.newPage();
     const products = [];
 
     await page.goto(
       `https://www.tiendapanini.com.mx/mexico/soluciones/busqueda.aspx?t=${productName}&o=4`,
-      this.pageConfig
+      this.pageConfig,
     );
 
     const searchResult = await this.scrappingProducts(page);
@@ -106,11 +115,11 @@ class Panini {
     }
 
     searchResult.forEach((result) => {
-      const productAdded = products.find((product) => 
+      const productAdded = products.find((product) =>
         result.name === product.name &&
         result.description === product.description
       );
-      
+
       if (!productAdded) {
         products.push(result);
       }
@@ -120,7 +129,8 @@ class Panini {
   }
 
   async getProductUrlSerie(productUrl) {
-    const browser = this.browser || await puppeteer.launch(this.puppeteerConfig);
+    const browser = this.browser ||
+      await puppeteer.launch(this.puppeteerConfig);
     const page = await browser.newPage();
 
     await page.goto(productUrl);
@@ -137,7 +147,8 @@ class Panini {
   }
 
   async getNewSerieProducts(serie) {
-    const browser = this.browser || await puppeteer.launch(this.puppeteerConfig);
+    const browser = this.browser ||
+      await puppeteer.launch(this.puppeteerConfig);
     const page = await browser.newPage();
 
     await page.goto(serie.url, this.pageConfig);
@@ -145,7 +156,7 @@ class Panini {
     const seriesProducts = await this.scrappingProducts(page);
 
     const newSeriesProducts = seriesProducts
-      .filter(product => {
+      .filter((product) => {
         return product.description === serie.description &&
           product.number > serie.lastNumber;
       })
@@ -159,7 +170,6 @@ class Panini {
 
     return newSeriesProducts;
   }
-  
 }
 
 export default Panini;
