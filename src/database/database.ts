@@ -1,10 +1,10 @@
-import { Database, SQLite3Connector } from "../deps.ts";
+import { Database, SQLite3Connector, dirname } from "../deps.ts";
 
 import SerieModel from "./models/Serie.ts";
 
 export async function connectDatabase(): Promise<Database> {
   const connector = new SQLite3Connector({
-    filepath: `${Deno.cwd()}/etc/collection.sqlite`,
+    filepath: `${dirname(Deno.execPath())}/etc/collection.sqlite`,
   });
   const database = new Database(connector);
 

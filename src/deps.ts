@@ -14,3 +14,4 @@ export {
   ListComponent,
   Trello,
 } from "https://raw.githubusercontent.com/stillalivx/deno-trello/main/mod.ts";
+export { dirname } from "https://deno.land/std@0.109.0/path/mod.ts";

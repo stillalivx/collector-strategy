@@ -1,4 +1,4 @@
-import { dotenvConfig, osNotify } from "../deps.ts";
+import { dotenvConfig, osNotify, dirname } from "../deps.ts";
 import { connectDatabase } from "../database/database.ts";
 import { getTrelloEnv } from "../utils/getEnv.ts";
 import SerieModel from "../database/models/Serie.ts";
@@ -6,7 +6,7 @@ import CollectorStrategy from "./CollectorStrategy.ts";
 
 import type { Serie } from "../types.ts";
 
-dotenvConfig({ path: `${Deno.cwd()}/.env`, export: true });
+dotenvConfig({ path: `${dirname(Deno.execPath())}/.env`, export: true });
 
 const HOURS = 10800000;
 const bot = new CollectorStrategy();
