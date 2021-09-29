@@ -217,10 +217,19 @@ class CollectorStrategy {
     const products: Product[] = [];
     const listCards = await this.trelloList.getCards();
 
-    listCards.forEach((card) => {
+    for (let i = 0; i < listCards.length; i++) {
+      const card = listCards[i];
       const product = JSON.parse(card.desc);
-      products.push(product);
-    });
+
+      const productExists = products
+        .find((item) => item.url === product.url);
+
+      if (!productExists) {
+        products.push(product);
+      }
+
+      await this.trelloCard.delete(card.id);
+    }
 
     const newList = products.filter((product) => product.name !== serie.name);
 
