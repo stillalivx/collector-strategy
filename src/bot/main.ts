@@ -18,7 +18,7 @@ osNotify("CollectorStrategy", "CollectorStrategy ha iniciado...")
 
 setInterval(async () => {
   osNotify("CollectorStrategy", "Buscando novedades...")
-  .catch(() => {});
+    .catch(() => {});
 
   const series = await SerieModel.all() as unknown as Serie[];
   await bot.updateSeriesProducts(series);
