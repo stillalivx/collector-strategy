@@ -13,10 +13,13 @@ const bot = new CollectorStrategy();
 
 await connectDatabase();
 
-await osNotify("MangaStrategy", "MangaStrategy ha iniciado...")
+osNotify("CollectorStrategy", "CollectorStrategy ha iniciado...")
   .catch(() => {});
 
 setInterval(async () => {
+  osNotify("CollectorStrategy", "Buscando novedades...")
+  .catch(() => {});
+
   const series = await SerieModel.all() as unknown as Serie[];
   await bot.updateSeriesProducts(series);
 }, HOURS);
