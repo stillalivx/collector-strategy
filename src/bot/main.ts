@@ -6,7 +6,7 @@ import CollectorStrategy from "./CollectorStrategy.ts";
 
 import type { Serie } from "../types.ts";
 
-dotenvConfig({ path: "./.env", export: true });
+dotenvConfig({ path: `${Deno.cwd()}/.env`, export: true });
 
 const HOURS = 10800000;
 const bot = new CollectorStrategy();
