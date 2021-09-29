@@ -15,7 +15,7 @@ export type Product = {
   url: string;
 };
 
-export interface Store {
+export type Store = {
   openBrowser: () => Promise<void>;
   closeBrowser: () => Promise<void>;
   search: (name: string) => Promise<Product[]>;
@@ -24,3 +24,8 @@ export interface Store {
 }
 
 export type EnumStore = "panini" | "kamite";
+
+export type QueryDBResponse = {
+  lastInsertId: number;
+  affectedRows: number;
+};
