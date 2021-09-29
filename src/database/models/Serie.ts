@@ -1,6 +1,6 @@
 import { DataTypes, Model } from "../../deps.ts";
 
-import type { Product } from "../../types.ts";
+import type { Product, QueryDBResponse } from "../../types.ts";
 
 class Serie extends Model {
   static table = "series";
@@ -47,12 +47,12 @@ class Serie extends Model {
       store: "panini" | "kamite";
       lastCheck: Date;
     }
-  ): Promise<{ lastInsertId: number, affectedRows: number }> {
-    return await this.create(serie);
+  ): Promise<QueryDBResponse> {
+    return await this.create(serie) as unknown as QueryDBResponse;
   }
 
-  static async remove(id: number): Promise<{ lastInserId: number, affectedRows: number }> {
-    return await this.deleteById(id);
+  static async remove(id: number): Promise<QueryDBResponse> {
+    return await this.deleteById(id) as unknown as QueryDBResponse;
   }
 }
 
