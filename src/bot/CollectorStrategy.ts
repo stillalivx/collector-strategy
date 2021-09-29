@@ -1,5 +1,5 @@
 import { osNotify } from "../deps.ts";
-import Panini from "../scrapping/Panini.js";
+import Panini from "../scraping/Panini.js";
 import { Trello } from "../deps.ts";
 import { getTrelloEnv } from "../utils/getEnv.ts";
 
@@ -9,7 +9,42 @@ class CollectorStrategy {
 
   private listId = "6130d3ee7345bb23bd03d2e8";
 
-  private async updateTrelloList(products: Product[]) {
+  async updateSeriesProducts(series: Serie[]) {
+    const storeScrapping: Store = new Panini();
+    let newProducts: Product[] = [];
+    let notificationMsg = "";
+
+    storeScrapping.openBrowser();
+
+    for (let i = 0; i < series.length; i++) {
+      const serie = series[i];
+      const newSeriesProducts = await storeScrapping.getNewSerieProducts(serie);
+
+      if (!newSeriesProducts.length) {
+        continue;
+      }
+
+      if (newSeriesProducts.length > 1) {
+        notificationMsg = `¡Se ha agregado más de un nuevo producto de ${
+          serie.name
+        } a la lista!`;
+      } else {
+        notificationMsg = `¡Se ha agregado un nuevo producto de ${
+          serie.name
+        } a la lista!`;
+      }
+
+      osNotify("CollectorStrategy", notificationMsg);
+
+      newProducts = newProducts.concat(newSeriesProducts);
+    }
+
+    if (newProducts.length) {
+      await this.updateTrelloList(newProducts);
+    }
+  }
+
+  async updateTrelloList(products: Product[]) {
     const { TRELLO_KEY, TRELLO_TOKEN } = getTrelloEnv();
 
     const trello = new Trello(TRELLO_KEY, TRELLO_TOKEN);
@@ -19,7 +54,7 @@ class CollectorStrategy {
 
     const series: Product[][] = [];
     const serieWithLessThan: Product[][] = [];
-    const serieWithMoreThan: Product[]][] = [];
+    const serieWithMoreThan: Product[][] = [];
     const sortedCards: Product[] = [];
 
     let totalWithLessThan = 0;
@@ -57,7 +92,7 @@ class CollectorStrategy {
           .find((item) => item.url === product.url);
 
         if (!productExists) {
-          serie[serieIndex].push(product);
+          series[serieIndex].push(product);
         }
       }
 
@@ -157,46 +192,16 @@ class CollectorStrategy {
 
     for (let i = 0; i < sortedCards.length; i++) {
       const card = sortedCards[i];
+      const name = `${card.name}${card.description ? ": " + card.description : ""} - #${card.number}`
 
       await trelloList.createCard({
-        name: `${card.serie} - #${card.number}`,
+        name,
         desc: JSON.stringify(card),
         urlSource: card.url,
         pos: "bottom",
       });
     }
   }
-
-  async updateSeriesProducts(series: Serie[]) {
-    const storeScrapping: Store = new Panini();
-    let newProducts = [];
-    let notificationMsg = "";
-
-    storeScrapping.openBrowser();
-
-    for (let i = 0; i < series.length; i++) {
-      const serie = series[i];
-      const newSeriesProducts = await storeScrapping.getNewSerieProducts(serie);
-
-      if (!newSeriesProducts.length) {
-        continue;
-      }
-
-      if (newSeriesProducts.length > 1) {
-        notifyMessage = `¡Se ha agregado más de un nuevo producto de ${
-          serie.name
-        } a la lista!`;
-      } else {
-        notifyMessage = `¡Se ha agregado un nuevo producto de ${
-          serie.name
-        } a la lista!`;
-      }
-
-      newProducts = newProducts.concat(newSeriesProducts);
-    }
-
-    await this.updateTrelloList(newProducts);
-  }
 }
 
-export default MangaStrategy;
+export default CollectorStrategy;
