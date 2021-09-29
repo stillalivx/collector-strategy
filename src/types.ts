@@ -21,7 +21,7 @@ export type Store = {
   search: (name: string) => Promise<Product[]>;
   getProductUrlSerie: (productUrl: string) => Promise<string>;
   getNewSerieProducts: (serie: Serie) => Promise<Product[]>;
-}
+};
 
 export type EnumStore = "panini" | "kamite";
 

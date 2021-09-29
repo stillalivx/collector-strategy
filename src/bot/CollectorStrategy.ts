@@ -3,11 +3,24 @@ import Panini from "../scraping/Panini.js";
 import { Trello } from "../deps.ts";
 import { getTrelloEnv } from "../utils/getEnv.ts";
 
-import type { Product, Store, Serie } from "../types.ts";
+import type { Product, Serie, Store } from "../types.ts";
 
 class CollectorStrategy {
+  private trello;
+
+  private trelloList;
+
+  private trelloCard;
 
   private listId = "6130d3ee7345bb23bd03d2e8";
+
+  constructor() {
+    const { TRELLO_KEY, TRELLO_TOKEN } = getTrelloEnv();
+
+    this.trello = new Trello(TRELLO_KEY, TRELLO_TOKEN);
+    this.trelloCard = this.trello.card();
+    this.trelloList = this.trello.list(this.listId);
+  }
 
   async updateSeriesProducts(series: Serie[]) {
     const storeScrapping: Store = new Panini();
@@ -25,13 +38,11 @@ class CollectorStrategy {
       }
 
       if (newSeriesProducts.length > 1) {
-        notificationMsg = `¡Se ha agregado más de un nuevo producto de ${
-          serie.name
-        } a la lista!`;
+        notificationMsg =
+          `¡Se ha agregado más de un nuevo producto de ${serie.name} a la lista!`;
       } else {
-        notificationMsg = `¡Se ha agregado un nuevo producto de ${
-          serie.name
-        } a la lista!`;
+        notificationMsg =
+          `¡Se ha agregado un nuevo producto de ${serie.name} a la lista!`;
       }
 
       osNotify("CollectorStrategy", notificationMsg);
@@ -44,14 +55,23 @@ class CollectorStrategy {
     }
   }
 
+  private async createTrelloCards(products: Product[]) {
+    for (let i = 0; i < products.length; i++) {
+      const card = products[i];
+      const name = `${card.name}${
+        card.description ? ": " + card.description : ""
+      } - #${card.number}`;
+
+      await this.trelloList.createCard({
+        name,
+        desc: JSON.stringify(card),
+        urlSource: card.url,
+        pos: "bottom",
+      });
+    }
+  }
+
   async updateTrelloList(products: Product[]) {
-    const { TRELLO_KEY, TRELLO_TOKEN } = getTrelloEnv();
-
-    const trello = new Trello(TRELLO_KEY, TRELLO_TOKEN);
-    const trelloCard = trello.card();
-
-    const trelloList = trello.list(this.listId);
-
     const series: Product[][] = [];
     const serieWithLessThan: Product[][] = [];
     const serieWithMoreThan: Product[][] = [];
@@ -62,7 +82,7 @@ class CollectorStrategy {
     let repeatWithLessThan = 0;
     let repeatWithMoreThan = 0;
 
-    const listCards = await trelloList.getCards();
+    const listCards = await this.trelloList.getCards();
 
     for (let i = 0; i < listCards.length; i++) {
       const card = listCards[i];
@@ -96,7 +116,7 @@ class CollectorStrategy {
         }
       }
 
-      await trelloCard.delete(card.id);
+      await this.trelloCard.delete(card.id);
     }
 
     for (let i = 0; i < products.length; i++) {
@@ -190,17 +210,21 @@ class CollectorStrategy {
       }
     }
 
-    for (let i = 0; i < sortedCards.length; i++) {
-      const card = sortedCards[i];
-      const name = `${card.name}${card.description ? ": " + card.description : ""} - #${card.number}`
+    await this.createTrelloCards(sortedCards);
+  }
 
-      await trelloList.createCard({
-        name,
-        desc: JSON.stringify(card),
-        urlSource: card.url,
-        pos: "bottom",
-      });
-    }
+  async deleteFromTrelloList(serie: Serie) {
+    const products: Product[] = [];
+    const listCards = await this.trelloList.getCards();
+
+    listCards.forEach((card) => {
+      const product = JSON.parse(card.desc);
+      products.push(product);
+    });
+
+    const newList = products.filter((product) => product.name !== serie.name);
+
+    await this.createTrelloCards(newList);
   }
 }
 
