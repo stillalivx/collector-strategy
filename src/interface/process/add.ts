@@ -1,8 +1,7 @@
 import { Colors, parse } from "../../deps.ts";
-import { getTrelloEnv } from "../../utils/getEnv.ts";
 import { closeDatabase, connectDatabase } from "../../database/database.ts";
 import SerieModel from "../../database/models/Serie.ts";
-import Panini from "../../scrapping/Panini.js";
+import Panini from "../../scraping/Panini.js";
 import CollectorStrategy from "../../bot/CollectorStrategy.ts";
 
 import type { EnumStore, Store } from "../../types.ts";
@@ -70,7 +69,7 @@ async function add() {
 
   if (isNaN(userSerieChoice)) {
     return;
-  }
+  }  
 
   const userSerieLastNumber = parseInt(
     prompt(Colors.blue("Último número adquirido:"), "") as string,
@@ -83,7 +82,7 @@ async function add() {
   console.log(`\n🔍 ${Colors.green("Obteniendo datos adicionales...")}`);
 
   const serieUrl = await storeScrapping.getProductUrlSerie(
-    searchResults[userSerieChoice].url as string,
+    searchResults[userSerieChoice].url
   );
 
   console.log(`💾 ${Colors.green("Guardando la información...")}`);
@@ -91,6 +90,8 @@ async function add() {
   const database = await connectDatabase();
 
   const serieExists = await SerieModel.select("id").where({
+    name: searchResults[userSerieChoice].name,
+    description: searchResults[userSerieChoice].description,
     url: serieUrl,
   }).first();
 
@@ -113,7 +114,10 @@ async function add() {
   console.log(`💾 ${Colors.green("La serie se guardó con éxito...")}`);
   console.log(`📝 ${Colors.green("Actualizando lista...")}`);
 
-  const newProductsPublished = await collectorStrategy.getNextSeries([serie]);
+  const newProductsPublished = await storeScrapping.getNewSerieProducts({
+    id: dbResponse.lastInsertId,
+    ...serie
+  });
 
   if (newProductsPublished.length) {
     await SerieModel
@@ -123,7 +127,7 @@ async function add() {
         lastCheck: new Date(),
       });
 
-    await collectorStrategy.sortMangaList(newProductsPublished);
+    await collectorStrategy.updateTrelloList(newProductsPublished);
   }
 
   await closeDatabase(database);
