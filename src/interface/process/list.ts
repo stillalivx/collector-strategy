@@ -24,9 +24,8 @@ async function list() {
     console.log(
       `${Colors.gray("Último número:")} ${
         Colors.blue(serie.lastNumber.toString())
-      } (${Colors.gray(serie.lastCheck.toString())})`,
+      } (${Colors.gray(serie.lastCheck.toString())})\n`,
     );
-    console.log();
   });
 }
 
