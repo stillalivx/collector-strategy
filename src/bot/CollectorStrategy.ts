@@ -12,7 +12,7 @@ class CollectorStrategy {
 
   private trelloCard;
 
-  private listId = "6130d3ee7345bb23bd03d2e8";
+  private listId = "6158945d8c4b722654e49b8a";//"6130d3ee7345bb23bd03d2e8";
 
   constructor() {
     const { TRELLO_KEY, TRELLO_TOKEN } = getTrelloEnv();
@@ -27,7 +27,7 @@ class CollectorStrategy {
     let newProducts: Product[] = [];
     let notificationMsg = "";
 
-    storeScrapping.openBrowser();
+    await storeScrapping.openBrowser();
 
     for (let i = 0; i < series.length; i++) {
       const serie = series[i];
@@ -50,6 +50,8 @@ class CollectorStrategy {
       newProducts = newProducts.concat(newSeriesProducts);
     }
 
+    await storeScrapping.closeBrowser();
+
     if (newProducts.length) {
       await this.updateTrelloList(newProducts);
     }
@@ -71,8 +73,7 @@ class CollectorStrategy {
     }
   }
 
-  async updateTrelloList(products: Product[]) {
-    const series: Product[][] = [];
+  private sortCards(series: Product[][]): Product[] {
     const serieWithLessThan: Product[][] = [];
     const serieWithMoreThan: Product[][] = [];
     const sortedCards: Product[] = [];
@@ -81,74 +82,6 @@ class CollectorStrategy {
     let totalWithMoreThan = 0;
     let repeatWithLessThan = 0;
     let repeatWithMoreThan = 0;
-
-    const listCards = await this.trelloList.getCards();
-
-    for (let i = 0; i < listCards.length; i++) {
-      const card = listCards[i];
-      const product: Product = JSON.parse(card.desc);
-
-      const serieIndex = series
-        .findIndex((serie) => {
-          const firstSerieProduct = serie[0];
-
-          if (!firstSerieProduct) return false;
-
-          if (product.description !== firstSerieProduct.description) {
-            return false;
-          } else if (product.name.length < firstSerieProduct.name.length) {
-            return firstSerieProduct.name.toLowerCase()
-              .includes(product.name.toLowerCase());
-          } else {
-            return product.name.toLowerCase()
-              .includes(firstSerieProduct.name.toLowerCase());
-          }
-        });
-
-      if (serieIndex === -1) {
-        series.push([product]);
-      } else {
-        const productExists = series[serieIndex]
-          .find((item) => item.url === product.url);
-
-        if (!productExists) {
-          series[serieIndex].push(product);
-        }
-      }
-
-      await this.trelloCard.delete(card.id);
-    }
-
-    for (let i = 0; i < products.length; i++) {
-      const product = products[i];
-      const serieIndex = series
-        .findIndex((serie) => {
-          const firstSerieProduct = serie[0];
-
-          if (!firstSerieProduct) return false;
-
-          if (product.description !== firstSerieProduct.description) {
-            return false;
-          } else if (product.name.length < firstSerieProduct.name.length) {
-            return firstSerieProduct.name.toLowerCase()
-              .includes(product.name.toLowerCase());
-          } else {
-            return product.name.toLowerCase()
-              .includes(firstSerieProduct.name.toLowerCase());
-          }
-        });
-
-      if (serieIndex === -1) {
-        series.push([product]);
-      } else {
-        const productExists = series[serieIndex]
-          .find((item) => item.url === product.url);
-
-        if (!productExists) {
-          series[serieIndex].push(product);
-        }
-      }
-    }
 
     series.forEach((serie) => {
       if (serie.length === 1) {
@@ -209,6 +142,83 @@ class CollectorStrategy {
         repeatWithMoreThan++;
       }
     }
+
+    return sortedCards;
+  }
+
+  async updateTrelloList(products: Product[]) {
+    const series: Product[][] = [];
+    const listCards = await this.trelloList.getCards();
+
+    for (let i = 0; i < products.length; i++) {
+      const product = products[i];
+      const serieIndex = series
+        .findIndex((serie) => {
+          const firstSerieProduct = serie[0];
+
+          if (!firstSerieProduct) return false;
+
+          if (product.description !== firstSerieProduct.description) {
+            return false;
+          } else if (product.name.length < firstSerieProduct.name.length) {
+            return firstSerieProduct.name.toLowerCase()
+              .includes(product.name.toLowerCase());
+          } else {
+            return product.name.toLowerCase()
+              .includes(firstSerieProduct.name.toLowerCase());
+          }
+        });
+
+      if (serieIndex === -1) {
+        series.push([product]);
+      } else {
+        const productExists = series[serieIndex]
+          .find((item) => item.url === product.url);
+
+        if (!productExists) {
+          series[serieIndex].push(product);
+        }
+      }
+    }
+
+    for (let i = 0; i < listCards.length; i++) {
+      const card = listCards[i];
+      const product: Product = JSON.parse(card.desc);
+
+      const serieIndex = series
+        .findIndex((serie) => {
+          const firstSerieProduct = serie[0];
+
+          if (!firstSerieProduct) return false;
+
+          if (product.description !== firstSerieProduct.description) {
+            return false;
+          } else if (product.name.length < firstSerieProduct.name.length) {
+            return firstSerieProduct.name.toLowerCase()
+              .includes(product.name.toLowerCase());
+          } else {
+            return product.name.toLowerCase()
+              .includes(firstSerieProduct.name.toLowerCase());
+          }
+        });
+
+      if (serieIndex === -1) {
+        series.push([product]);
+      } else {
+        const serieOnList = series[serieIndex];
+        const productExists = serieOnList
+          .find((item) => item.url === product.url);
+        const firstNumber = serieOnList[0].number;
+
+        if (!productExists && product.number > firstNumber) {
+          series[serieIndex].push(product);
+        }
+      }
+
+      await this.trelloCard.delete(card.id);
+    }
+
+    const sortedCards = this.sortCards(series);
 
     await this.createTrelloCards(sortedCards);
   }
