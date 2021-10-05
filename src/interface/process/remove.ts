@@ -2,34 +2,35 @@ import { Colors, parse } from "../../deps.ts";
 import CollectorStrategy from "../../bot/CollectorStrategy.ts";
 import { closeDatabase, connectDatabase } from "../../database/database.ts";
 import SerieModel from "../../database/models/Serie.ts";
+import { getUserConfig } from "../../utils/userConfig.ts";
+import InterfaceError from "../../utils/InterfaceError.ts";
 
 import type { Serie } from "../../types.ts";
 
 async function remove() {
   const args = parse(Deno.args);
-  const serieToRemove = parseInt(args.r || args.remove);
+  const serieToRemove = parseInt(args._[1] as string);
+  const userConfig = getUserConfig();
 
-  const collectorStrategy = new CollectorStrategy();
+  if (!userConfig.trello.list) {
+    throw new InterfaceError("No se ha registrado la lista de trello para organizar la colección")
+  }
+
+  const collectorStrategy = new CollectorStrategy(userConfig.trello.list);
 
   if (isNaN(serieToRemove)) {
-    console.log(
-      `❌ ${
-        Colors.red(
-          "No se ha declarado el id de la serie que se desea eliminaar",
-        )
-      }`,
+    throw new InterfaceError(
+      "No se ha declarado el id de la serie que se desea eliminaar"
     );
-    return;
   }
 
   const database = await connectDatabase();
   const serie = await SerieModel.find(serieToRemove) as unknown as Serie;
 
   if (!serie) {
-    console.log(
-      `❌ ${Colors.red("La serie con el id " + serieToRemove + " no existe")}`,
+    throw new InterfaceError(
+      "La serie con el id " + serieToRemove + " no existe"
     );
-    return;
   }
 
   console.log(`📝 ${Colors.green("Actualizando lista...")}`);

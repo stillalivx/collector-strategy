@@ -3,14 +3,21 @@ import { closeDatabase, connectDatabase } from "../../database/database.ts";
 import SerieModel from "../../database/models/Serie.ts";
 import Panini from "../../scraping/Panini.js";
 import CollectorStrategy from "../../bot/CollectorStrategy.ts";
+import { getUserConfig } from "../../utils/userConfig.ts";
+import InterfaceError from "../../utils/InterfaceError.ts";
 
 import type { EnumStore, Store } from "../../types.ts";
 
 async function add() {
   const args = parse(Deno.args);
-  const searchValue = args.a || args.add;
+  const searchValue = args._[1];
+  const userConfig = getUserConfig();
 
-  const collectorStrategy = new CollectorStrategy();
+  if (!userConfig.trello.list) {
+    throw new InterfaceError("No se ha registrado la lista de trello para organizar la colección")
+  }
+
+  const collectorStrategy = new CollectorStrategy(userConfig.trello.list);
 
   let store = args.s || args.store;
   let storeName;
@@ -18,19 +25,13 @@ async function add() {
   let storeEnumValue: EnumStore;
 
   if (!searchValue || typeof searchValue !== "string") {
-    console.log(`❌ ${Colors.red("No se ha declarado el nombre de la serie")}`);
-    return;
+    throw new InterfaceError("No se ha declarado el nombre de la serie");
   }
 
   if (!store || typeof store !== "string") {
-    console.log(
-      `❌ ${
-        Colors.red(
-          "No se ha declarado la tienda en la que se buscará el producto",
-        )
-      }`,
+    throw new InterfaceError(
+      "No se ha declarado la tienda en la que se buscará el producto",
     );
-    return;
   }
 
   if (store === "panini" || store === "p") {
@@ -38,8 +39,7 @@ async function add() {
     storeEnumValue = "panini";
     storeName = "Editorial Panini";
   } else {
-    console.log(`❌ ${Colors.red("La tienda declarada es invalida")}`);
-    return;
+    throw new InterfaceError("La tienda declarada es invalida");
   }
 
   console.log(Colors.green(`🔍 Buscando "${searchValue}" en ${storeName}`));
@@ -47,8 +47,7 @@ async function add() {
   const searchResults = await storeScrapping.search(searchValue);
 
   if (!searchResults.length) {
-    console.log(`❌ ${Colors.red("No se han encontrado resultados")}`);
-    return;
+    throw new InterfaceError("No se han encontrado resultados");
   }
 
   console.log(Colors.green(`🔍 Resultados:\n`));
@@ -96,8 +95,7 @@ async function add() {
   }).first();
 
   if (serieExists) {
-    console.log(`❌ ${Colors.red("La serie ya ha sido registrada")}`);
-    return;
+    throw new InterfaceError("La serie ya ha sido registrada");
   }
 
   const serie = {
