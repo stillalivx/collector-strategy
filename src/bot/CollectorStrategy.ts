@@ -12,14 +12,12 @@ class CollectorStrategy {
 
   private trelloCard;
 
-  private listId = "6158945d8c4b722654e49b8a";//"6130d3ee7345bb23bd03d2e8";
-
-  constructor() {
+  constructor(listId: string) {
     const { TRELLO_KEY, TRELLO_TOKEN } = getTrelloEnv();
 
     this.trello = new Trello(TRELLO_KEY, TRELLO_TOKEN);
     this.trelloCard = this.trello.card();
-    this.trelloList = this.trello.list(this.listId);
+    this.trelloList = this.trello.list(listId);
   }
 
   async updateSeriesProducts(series: Serie[]) {
