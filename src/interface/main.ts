@@ -1,5 +1,4 @@
 import { dotenvConfig, parse, dirname } from "../deps.ts";
-import { getUserConfig } from "../utils/userConfig.ts";
 import InterfaceError from "../utils/InterfaceError.ts";
 
 import list from "./process/list.ts";
@@ -9,7 +8,6 @@ import edit from "./process/edit.ts";
 import config from "./process/config.ts";
 
 dotenvConfig({ path: `${dirname(Deno.execPath())}/.env`, export: true });
-getUserConfig();
 
 try {
   const args = parse(Deno.args);
