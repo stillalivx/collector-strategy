@@ -3,34 +3,33 @@ import CollectorStrategy from "../../bot/CollectorStrategy.ts";
 import { closeDatabase, connectDatabase } from "../../database/database.ts";
 import SerieModel from "../../database/models/Serie.ts";
 import Panini from "../../scraping/Panini.js";
+import { getUserConfig } from "../../utils/userConfig.ts";
+import InterfaceError from "../../utils/InterfaceError.ts";
 
 import type { Serie, Product } from "../../types.ts";
 
 async function edit() {
   const args = parse(Deno.args);
-  const serieToEdit = parseInt(args.e || args.edit);
+  const serieToEdit = parseInt(args._[1] as string);
+  const userConfig = getUserConfig();
 
-  const collectorStrategy = new CollectorStrategy();
+  if (!userConfig.trello.list) {
+    throw new InterfaceError("No se ha registrado la lista de trello para organizar la colección")
+  }
+
+  const collectorStrategy = new CollectorStrategy(userConfig.trello.list);
 
   if (isNaN(serieToEdit)) {
-    console.log(
-      `❌ ${
-        Colors.red(
-          "No se ha declarado el id de la serie que se desea editar",
-        )
-      }`,
+    throw new InterfaceError(
+      "No se ha declarado el id de la serie que se desea editar",
     );
-    return;
   }
 
   const database = await connectDatabase();
   const serie = await SerieModel.find(serieToEdit) as unknown as Serie;
 
   if (!serie) {
-    console.log(
-      `❌ ${Colors.red("La serie con el id " + serieToEdit + " no existe")}`,
-    );
-    return;
+    throw new InterfaceError("La serie con el id " + serieToEdit + " no existe");
   }
 
   const storeScrapping = new Panini();

@@ -29,3 +29,15 @@ export type QueryDBResponse = {
   lastInsertId: number;
   affectedRows: number;
 };
+
+export type UserConfig = {
+  trello: {
+    list: string;
+  },
+  accounts: {
+    panini: {
+      username: string;
+      password: string;
+    }
+  }
+};
