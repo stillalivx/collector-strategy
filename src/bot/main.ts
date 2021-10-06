@@ -20,7 +20,9 @@ dotenvConfig({ path: `${Deno.cwd()}/.env`, export: true });
 const userConfig = getUserConfig();
 
 if (!userConfig.trello.list) {
-  throw new InterfaceError("Es necesario registrar el id de una lista de trello para adminsitrar la colección");
+  throw new InterfaceError(
+    "Es necesario registrar el id de una lista de trello para adminsitrar la colección",
+  );
 }
 
 const HOURS = 10800000;

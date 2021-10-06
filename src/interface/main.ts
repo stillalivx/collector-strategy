@@ -37,7 +37,7 @@ try {
     case "version":
       console.log("Version: 0.4.1");
       break;
-  
+
     default:
       break;
   }
@@ -47,6 +47,6 @@ try {
   } else {
     console.error(e);
   }
-}  
+}
 
 Deno.exit();

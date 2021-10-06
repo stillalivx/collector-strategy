@@ -14,7 +14,9 @@ async function add() {
   const userConfig = getUserConfig();
 
   if (!userConfig.trello.list) {
-    throw new InterfaceError("No se ha registrado la lista de trello para organizar la colección")
+    throw new InterfaceError(
+      "No se ha registrado la lista de trello para organizar la colección",
+    );
   }
 
   const collectorStrategy = new CollectorStrategy(userConfig.trello.list);

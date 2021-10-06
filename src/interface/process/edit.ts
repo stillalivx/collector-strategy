@@ -6,7 +6,7 @@ import Panini from "../../scraping/Panini.js";
 import { getUserConfig } from "../../utils/userConfig.ts";
 import InterfaceError from "../../utils/InterfaceError.ts";
 
-import type { Serie, Product } from "../../types.ts";
+import type { Product, Serie } from "../../types.ts";
 
 async function edit() {
   const args = parse(Deno.args);
@@ -14,7 +14,9 @@ async function edit() {
   const userConfig = getUserConfig();
 
   if (!userConfig.trello.list) {
-    throw new InterfaceError("No se ha registrado la lista de trello para organizar la colección")
+    throw new InterfaceError(
+      "No se ha registrado la lista de trello para organizar la colección",
+    );
   }
 
   const collectorStrategy = new CollectorStrategy(userConfig.trello.list);
@@ -29,13 +31,22 @@ async function edit() {
   const serie = await SerieModel.find(serieToEdit) as unknown as Serie;
 
   if (!serie) {
-    throw new InterfaceError("La serie con el id " + serieToEdit + " no existe");
+    throw new InterfaceError(
+      "La serie con el id " + serieToEdit + " no existe",
+    );
   }
 
   const storeScrapping = new Panini();
 
   console.log(`${Colors.yellow("Actualizando " + serie.name + "...")}\n`);
-  const userSerieLastNumber = parseInt(prompt(`${Colors.blue("Último tomo adquirido")} ${Colors.gray("(" + serie.lastNumber + ")")}:`, "") as string);
+  const userSerieLastNumber = parseInt(
+    prompt(
+      `${Colors.blue("Último tomo adquirido")} ${
+        Colors.gray("(" + serie.lastNumber + ")")
+      }:`,
+      "",
+    ) as string,
+  );
 
   if (isNaN(userSerieLastNumber)) {
     return;
@@ -52,7 +63,9 @@ async function edit() {
   console.log(`💾 ${Colors.green("La serie se guardó con éxito...")}`);
   console.log(`📝 ${Colors.green("Actualizando lista...")}`);
 
-  const newProductsPublished = await storeScrapping.getNewSerieProducts(serie) as unknown as Product[];
+  const newProductsPublished = await storeScrapping.getNewSerieProducts(
+    serie,
+  ) as unknown as Product[];
 
   if (newProductsPublished.length) {
     await SerieModel

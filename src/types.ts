@@ -33,11 +33,11 @@ export type QueryDBResponse = {
 export type UserConfig = {
   trello: {
     list: string;
-  },
+  };
   accounts: {
     panini: {
       username: string;
       password: string;
-    }
-  }
+    };
+  };
 };
