@@ -1,3 +1,4 @@
+import { dirname } from "../deps.ts";
 import { UserConfig } from "../types.ts";
 
 function deepPropsCopy(target: any, source: any): any {
@@ -30,11 +31,13 @@ export function getUserConfig() {
   };
 
   try {
-    const configFile = Deno.readTextFileSync(`${Deno.cwd()}/etc/config.json`);
+    const configFile = Deno.readTextFileSync(
+      `${dirname(Deno.execPath())}/etc/config.json`,
+    );
     Object.assign(userConfig, JSON.parse(configFile));
   } catch (e) {
     Deno.writeTextFileSync(
-      `${Deno.cwd()}/etc/config.json`,
+      `${dirname(Deno.execPath())}/etc/config.json`,
       JSON.stringify(userConfig),
     );
   }
@@ -57,7 +60,7 @@ export function setUserConfig(config: {
   const newUserConfig = deepPropsCopy(userConfigFromFile, config);
 
   Deno.writeTextFileSync(
-    `${Deno.cwd()}/etc/config.json`,
+    `${dirname(Deno.execPath())}/etc/config.json`,
     JSON.stringify(newUserConfig),
   );
 
