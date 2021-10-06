@@ -16,5 +16,4 @@ export function getTrelloEnv(): { TRELLO_KEY: string; TRELLO_TOKEN: string } {
 }
 
 export function getUserSettingsEnv() {
-  
 }

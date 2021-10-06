@@ -13,14 +13,16 @@ async function remove() {
   const userConfig = getUserConfig();
 
   if (!userConfig.trello.list) {
-    throw new InterfaceError("No se ha registrado la lista de trello para organizar la colección")
+    throw new InterfaceError(
+      "No se ha registrado la lista de trello para organizar la colección",
+    );
   }
 
   const collectorStrategy = new CollectorStrategy(userConfig.trello.list);
 
   if (isNaN(serieToRemove)) {
     throw new InterfaceError(
-      "No se ha declarado el id de la serie que se desea eliminaar"
+      "No se ha declarado el id de la serie que se desea eliminaar",
     );
   }
 
@@ -29,7 +31,7 @@ async function remove() {
 
   if (!serie) {
     throw new InterfaceError(
-      "La serie con el id " + serieToRemove + " no existe"
+      "La serie con el id " + serieToRemove + " no existe",
     );
   }
 

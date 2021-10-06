@@ -1,4 +1,4 @@
-import { dotenvConfig, parse, dirname } from "../deps.ts";
+import { dirname, dotenvConfig, parse } from "../deps.ts";
 import InterfaceError from "../utils/InterfaceError.ts";
 
 import list from "./process/list.ts";
@@ -37,7 +37,7 @@ try {
     case "version":
       console.log("Version: 0.4.1");
       break;
-  
+
     default:
       break;
   }
@@ -47,6 +47,6 @@ try {
   } else {
     console.error(e);
   }
-}  
+}
 
 Deno.exit();

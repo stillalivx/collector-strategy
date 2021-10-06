@@ -16,44 +16,50 @@ function deepPropsCopy(target: any, source: any): any {
   return target;
 }
 
-export function getUserConfig () {
+export function getUserConfig() {
   let userConfig: UserConfig = {
     trello: {
-      list: ""
+      list: "",
     },
     accounts: {
       panini: {
         username: "",
-        password: ""
-      }
-    }
+        password: "",
+      },
+    },
   };
-  
+
   try {
     const configFile = Deno.readTextFileSync(`${Deno.cwd()}/etc/config.json`);
     Object.assign(userConfig, JSON.parse(configFile));
-  } catch(e) {
-    Deno.writeTextFileSync(`${Deno.cwd()}/etc/config.json`, JSON.stringify(userConfig));
+  } catch (e) {
+    Deno.writeTextFileSync(
+      `${Deno.cwd()}/etc/config.json`,
+      JSON.stringify(userConfig),
+    );
   }
 
   return userConfig;
 }
 
-export function setUserConfig (config: {
+export function setUserConfig(config: {
   trello?: {
-    list: string
-  },
+    list: string;
+  };
   accounts?: {
     panini?: {
       username?: string;
       password?: string;
-    }
-  }
+    };
+  };
 }) {
   const userConfigFromFile = getUserConfig();
   const newUserConfig = deepPropsCopy(userConfigFromFile, config);
 
-  Deno.writeTextFileSync(`${Deno.cwd()}/etc/config.json`, JSON.stringify(newUserConfig));
+  Deno.writeTextFileSync(
+    `${Deno.cwd()}/etc/config.json`,
+    JSON.stringify(newUserConfig),
+  );
 
   return newUserConfig;
 }

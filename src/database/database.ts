@@ -1,4 +1,4 @@
-import { Database, SQLite3Connector, dirname } from "../deps.ts";
+import { Database, dirname, SQLite3Connector } from "../deps.ts";
 
 import SerieModel from "./models/Serie.ts";
 
