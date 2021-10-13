@@ -2,6 +2,7 @@ import { osNotify } from "../deps.ts";
 import Panini from "../scraping/Panini.js";
 import { Trello } from "../deps.ts";
 import { getTrelloEnv } from "../utils/getEnv.ts";
+import SerieModel from "../database/models/Serie.ts";
 
 import type { Product, Serie, Store } from "../types.ts";
 
@@ -43,7 +44,12 @@ class CollectorStrategy {
           `¡Se ha agregado un nuevo producto de ${serie.name} a la lista!`;
       }
 
-      osNotify("CollectorStrategy", notificationMsg);
+      osNotify("CollectorStrategy", notificationMsg).catch(() => {});
+      
+      await SerieModel.updateLastNumber(
+        serie.id,
+        newSeriesProducts[newSeriesProducts.length - 1].number
+      );
 
       newProducts = newProducts.concat(newSeriesProducts);
     }
