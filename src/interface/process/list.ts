@@ -1,5 +1,4 @@
 import { Colors } from "../../deps.ts";
-import { closeDatabase, connectDatabase } from "../../database/database.ts";
 import SerieModel from "../../database/models/Serie.ts";
 
 import type { Serie } from "../../types.ts";
@@ -7,10 +6,7 @@ import type { Serie } from "../../types.ts";
 async function list() {
   console.log(`💾 ${Colors.green("Obteniendo las series enlistadas...\n")}`);
 
-  const database = await connectDatabase();
   const series = await SerieModel.all() as unknown as Serie[];
-
-  await closeDatabase(database);
 
   series.forEach((serie) => {
     console.log(

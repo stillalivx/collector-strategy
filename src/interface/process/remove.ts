@@ -1,6 +1,5 @@
 import { Colors, parse } from "../../deps.ts";
 import CollectorStrategy from "../../bot/CollectorStrategy.ts";
-import { closeDatabase, connectDatabase } from "../../database/database.ts";
 import SerieModel from "../../database/models/Serie.ts";
 import { getUserConfig } from "../../utils/userConfig.ts";
 import InterfaceError from "../../utils/InterfaceError.ts";
@@ -26,7 +25,6 @@ async function remove() {
     );
   }
 
-  const database = await connectDatabase();
   const serie = await SerieModel.find(serieToRemove) as unknown as Serie;
 
   if (!serie) {
@@ -43,7 +41,6 @@ async function remove() {
   console.log(`🚮 ${Colors.green("Eliminando serie...")}`);
 
   await SerieModel.deleteById(serieToRemove);
-  await closeDatabase(database);
 
   console.log(`✔️ ${Colors.green("Serie eliminada...")}`);
 }

@@ -1,6 +1,5 @@
 import { Colors, parse } from "../../deps.ts";
 import CollectorStrategy from "../../bot/CollectorStrategy.ts";
-import { closeDatabase, connectDatabase } from "../../database/database.ts";
 import SerieModel from "../../database/models/Serie.ts";
 import Panini from "../../scraping/Panini.js";
 import { getUserConfig } from "../../utils/userConfig.ts";
@@ -27,7 +26,6 @@ async function edit() {
     );
   }
 
-  const database = await connectDatabase();
   const serie = await SerieModel.find(serieToEdit) as unknown as Serie;
 
   if (!serie) {
@@ -80,8 +78,6 @@ async function edit() {
   }
 
   console.log(`✔️ ${Colors.green("Lista actualizada...")}`);
-
-  await closeDatabase(database);
 }
 
 export default edit;
