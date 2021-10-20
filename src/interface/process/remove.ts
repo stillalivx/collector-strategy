@@ -36,6 +36,7 @@ async function remove() {
   console.log(`📝 ${Colors.green("Actualizando lista...")}`);
 
   await collectorStrategy.deleteFromTrelloList(serie);
+  await collectorStrategy.updateTrelloList([]);
 
   console.log(`📝 ${Colors.green("Lista actualizada...")}`);
   console.log(`🚮 ${Colors.green("Eliminando serie...")}`);

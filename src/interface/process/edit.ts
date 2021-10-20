@@ -74,6 +74,7 @@ async function edit() {
         lastCheck: new Date(),
       });
 
+    await collectorStrategy.deleteFromTrelloList(serie);
     await collectorStrategy.updateTrelloList(newProductsPublished);
   }
 
