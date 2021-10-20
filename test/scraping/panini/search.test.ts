@@ -1,8 +1,8 @@
-import Panini from "../../../src/scraping/Panini.js";
+import Panini from "../../../src/scraping/Panini.ts";
 
-import type { Store } from "../../../src/types.ts";
+const panini = new Panini();
+const results = await panini.search("sword art online");
 
-const panini: Store = new Panini();
-const products = await panini.search("sword art online");
+console.log(results);
 
-console.log(products);
+Deno.exit();

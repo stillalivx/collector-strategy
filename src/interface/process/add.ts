@@ -1,6 +1,6 @@
 import { Colors, parse } from "../../deps.ts";
 import SerieModel from "../../database/models/Serie.ts";
-import Panini from "../../scraping/Panini.js";
+import Panini from "../../scraping/Panini.ts";
 import CollectorStrategy from "../../bot/CollectorStrategy.ts";
 import { getUserConfig } from "../../utils/userConfig.ts";
 import InterfaceError from "../../utils/InterfaceError.ts";
@@ -36,7 +36,7 @@ async function add() {
   }
 
   if (store === "panini" || store === "p") {
-    storeScrapping = new Panini() as unknown as Store;
+    storeScrapping = new Panini();
     storeEnumValue = "panini";
     storeName = "Editorial Panini";
   } else {
@@ -111,7 +111,7 @@ async function add() {
   console.log(`💾 ${Colors.green("La serie se guardó con éxito...")}`);
   console.log(`📝 ${Colors.green("Actualizando lista...")}`);
 
-  const newProductsPublished = await storeScrapping.getNewSerieProducts({
+  const newProductsPublished = await storeScrapping.getNewProducts({
     id: dbResponse.lastInsertId,
     ...serie,
   });

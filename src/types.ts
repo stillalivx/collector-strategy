@@ -16,11 +16,9 @@ export type Product = {
 };
 
 export type Store = {
-  openBrowser: () => Promise<void>;
-  closeBrowser: () => Promise<void>;
   search: (name: string) => Promise<Product[]>;
-  getProductUrlSerie: (productUrl: string) => Promise<string>;
-  getNewSerieProducts: (serie: Serie) => Promise<Product[]>;
+  getProductUrlSerie: (url: string) => Promise<string>;
+  getNewProducts: (serie: Serie) => Promise<Product[]>;
 };
 
 export type EnumStore = "panini" | "kamite";

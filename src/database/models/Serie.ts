@@ -54,6 +54,16 @@ class Serie extends Model {
   static async remove(id: number): Promise<QueryDBResponse> {
     return await this.deleteById(id) as unknown as QueryDBResponse;
   }
+
+  static async updateLastNumber(id: number, num: number): Promise<QueryDBResponse> {
+    return await this
+      .where({ id })
+      .update({
+        lastNumber: num,
+        lastCheck: new Date()
+      }) as unknown as QueryDBResponse;
+  }
+
 }
 
 export default Serie;
