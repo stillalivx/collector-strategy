@@ -114,7 +114,7 @@ async function add() {
   const newProductsPublished = await storeScrapping.getNewProducts({
     id: dbResponse.lastInsertId,
     ...serie,
-  });
+  });  
 
   if (newProductsPublished.length) {
     await SerieModel.updateLastNumber(

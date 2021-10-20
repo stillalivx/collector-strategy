@@ -13,6 +13,7 @@ export type Product = {
   description: string;
   number: number;
   url: string;
+  serie: number;
 };
 
 export type Store = {

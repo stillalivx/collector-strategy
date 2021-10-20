@@ -13,7 +13,8 @@ class Panini implements Store {
         name: "",
         description: "",
         number: 0,
-        url: ""
+        url: "",
+        serie: 0
       };
 
       const name = node.childNodes[0].childNodes[0].textContent || "";
@@ -106,7 +107,12 @@ class Panini implements Store {
       throw new Error("Error al cargar la página de la serie");
     }
 
-    const products = this.getProducts(page);
+    const rawProducts = this.getProducts(page);
+    
+    const products = rawProducts.map(product => {
+      product.serie = serie.id;
+      return product;
+    });
 
     if (products.length === 1 && products[0].number === 0) {
       return products;

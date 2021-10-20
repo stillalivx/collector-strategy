@@ -21,48 +21,12 @@ class CollectorStrategy {
     this.trelloList = this.trello.list(listId);
   }
 
-  async updateSeriesProducts(series: Serie[]) {
-    const storeScrapping: Store = new Panini();
-    let newProducts: Product[] = [];
-    let notificationMsg = "";
-
-    for (let i = 0; i < series.length; i++) {
-      const serie = series[i];
-      const newSeriesProducts = await storeScrapping.getNewProducts(serie);
-
-      if (!newSeriesProducts.length) {
-        continue;
-      }
-
-      if (newSeriesProducts.length > 1) {
-        notificationMsg =
-          `¡Se ha agregado más de un nuevo producto de ${serie.name} a la lista!`;
-      } else {
-        notificationMsg =
-          `¡Se ha agregado un nuevo producto de ${serie.name} a la lista!`;
-      }
-
-      osNotify("CollectorStrategy", notificationMsg).catch(() => {});
-      
-      await SerieModel.updateLastNumber(
-        serie.id,
-        newSeriesProducts[newSeriesProducts.length - 1].number
-      );
-
-      newProducts = newProducts.concat(newSeriesProducts);
-    }
-
-    if (newProducts.length) {
-      await this.updateTrelloList(newProducts);
-    }
-  }
-
   private async createTrelloCards(products: Product[]) {
     for (let i = 0; i < products.length; i++) {
       const card = products[i];
       const name = `${card.name}${
         card.description ? ": " + card.description : ""
-      }${card.number !== 0 ? "- #" + card.number : ""}`;
+      }${card.number !== 0 ? " - #" + card.number : ""}`;
 
       await this.trelloList.createCard({
         name,
@@ -146,40 +110,45 @@ class CollectorStrategy {
     return sortedCards;
   }
 
+  async updateSeriesProducts(series: Serie[]) {
+    const storeScrapping: Store = new Panini();
+    let newProducts: Product[] = [];
+    let notificationMsg = "";
+
+    for (let i = 0; i < series.length; i++) {
+      const serie = series[i];
+      const newSeriesProducts = await storeScrapping.getNewProducts(serie);
+
+      if (!newSeriesProducts.length) {
+        continue;
+      }
+
+      if (newSeriesProducts.length > 1) {
+        notificationMsg =
+          `¡Se ha agregado más de un nuevo producto de ${serie.name} a la lista!`;
+      } else {
+        notificationMsg =
+          `¡Se ha agregado un nuevo producto de ${serie.name} a la lista!`;
+      }
+
+      osNotify("CollectorStrategy", notificationMsg).catch(() => {});
+      
+      await SerieModel.updateLastNumber(
+        serie.id,
+        newSeriesProducts[newSeriesProducts.length - 1].number
+      );
+
+      newProducts = newProducts.concat(newSeriesProducts);
+    }
+
+    if (newProducts.length) {
+      await this.updateTrelloList(newProducts);
+    }
+  }
+
   async updateTrelloList(products: Product[]) {
     const series: Product[][] = [];
     const listCards = await this.trelloList.getCards();
-
-    for (let i = 0; i < products.length; i++) {
-      const product = products[i];
-      const serieIndex = series
-        .findIndex((serie) => {
-          const firstSerieProduct = serie[0];
-
-          if (!firstSerieProduct) return false;
-
-          if (product.description !== firstSerieProduct.description) {
-            return false;
-          } else if (product.name.length < firstSerieProduct.name.length) {
-            return firstSerieProduct.name.toLowerCase()
-              .includes(product.name.toLowerCase());
-          } else {
-            return product.name.toLowerCase()
-              .includes(firstSerieProduct.name.toLowerCase());
-          }
-        });
-
-      if (serieIndex === -1) {
-        series.push([product]);
-      } else {
-        const productExists = series[serieIndex]
-          .find((item) => item.url === product.url);
-
-        if (!productExists) {
-          series[serieIndex].push(product);
-        }
-      }
-    }
 
     for (let i = 0; i < listCards.length; i++) {
       const card = listCards[i];
@@ -188,18 +157,8 @@ class CollectorStrategy {
       const serieIndex = series
         .findIndex((serie) => {
           const firstSerieProduct = serie[0];
-
           if (!firstSerieProduct) return false;
-
-          if (product.description !== firstSerieProduct.description) {
-            return false;
-          } else if (product.name.length < firstSerieProduct.name.length) {
-            return firstSerieProduct.name.toLowerCase()
-              .includes(product.name.toLowerCase());
-          } else {
-            return product.name.toLowerCase()
-              .includes(firstSerieProduct.name.toLowerCase());
-          }
+          return product.serie === firstSerieProduct.serie;
         });
 
       if (serieIndex === -1) {
@@ -218,6 +177,27 @@ class CollectorStrategy {
       await this.trelloCard.delete(card.id);
     }
 
+    for (let i = 0; i < products.length; i++) {
+      const product = products[i];
+      const serieIndex = series
+        .findIndex((serie) => {
+          const firstSerieProduct = serie[0];
+          if (!firstSerieProduct) return false;
+          return product.serie === firstSerieProduct.serie;
+        });
+
+      if (serieIndex === -1) {
+        series.push([product]);
+      } else {
+        const productExists = series[serieIndex]
+          .find((item) => item.url === product.url);
+
+        if (!productExists) {
+          series[serieIndex].push(product);
+        }
+      }
+    }
+
     const sortedCards = this.sortCards(series);
 
     await this.createTrelloCards(sortedCards);
@@ -231,19 +211,10 @@ class CollectorStrategy {
       const card = listCards[i];
       const product = JSON.parse(card.desc);
 
-      const productExists = products
-        .find((item) => item.url === product.url);
-
-      if (!productExists) {
-        products.push(product);
+      if (product.serie === serie.id) {
+        await this.trelloCard.delete(card.id);
       }
-
-      await this.trelloCard.delete(card.id);
     }
-
-    const newList = products.filter((product) => product.name !== serie.name);
-
-    await this.createTrelloCards(newList);
   }
 }
 
