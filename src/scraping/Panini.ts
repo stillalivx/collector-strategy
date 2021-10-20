@@ -108,9 +108,13 @@ class Panini implements Store {
 
     const products = this.getProducts(page);
 
-    return products
-      .filter(product => product.description === serie.description && product.number > serie.lastNumber)
-      .sort((a, b) => a.number - b.number);
+    if (products.length === 1 && products[0].number === 0) {
+      return products;
+    } else {
+      return products
+        .filter(product => product.description === serie.description && product.number > serie.lastNumber)
+        .sort((a, b) => a.number - b.number);
+    }
   }
 }
 

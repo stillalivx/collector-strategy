@@ -62,7 +62,7 @@ class CollectorStrategy {
       const card = products[i];
       const name = `${card.name}${
         card.description ? ": " + card.description : ""
-      } - #${card.number}`;
+      }${card.number !== 0 ? "- #" + card.number : ""}`;
 
       await this.trelloList.createCard({
         name,
