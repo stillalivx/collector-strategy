@@ -1,7 +1,8 @@
 import { osNotify } from "../deps.ts";
-import Panini from "../scraping/Panini.js";
+import Panini from "../scraping/Panini.ts";
 import { Trello } from "../deps.ts";
 import { getTrelloEnv } from "../utils/getEnv.ts";
+import SerieModel from "../database/models/Serie.ts";
 
 import type { Product, Serie, Store } from "../types.ts";
 
@@ -25,11 +26,9 @@ class CollectorStrategy {
     let newProducts: Product[] = [];
     let notificationMsg = "";
 
-    await storeScrapping.openBrowser();
-
     for (let i = 0; i < series.length; i++) {
       const serie = series[i];
-      const newSeriesProducts = await storeScrapping.getNewSerieProducts(serie);
+      const newSeriesProducts = await storeScrapping.getNewProducts(serie);
 
       if (!newSeriesProducts.length) {
         continue;
@@ -43,12 +42,15 @@ class CollectorStrategy {
           `¡Se ha agregado un nuevo producto de ${serie.name} a la lista!`;
       }
 
-      osNotify("CollectorStrategy", notificationMsg);
+      osNotify("CollectorStrategy", notificationMsg).catch(() => {});
+      
+      await SerieModel.updateLastNumber(
+        serie.id,
+        newSeriesProducts[newSeriesProducts.length - 1].number
+      );
 
       newProducts = newProducts.concat(newSeriesProducts);
     }
-
-    await storeScrapping.closeBrowser();
 
     if (newProducts.length) {
       await this.updateTrelloList(newProducts);

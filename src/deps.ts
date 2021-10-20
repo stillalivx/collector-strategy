@@ -1,6 +1,4 @@
-export { default as puppeteer } from "https://deno.land/x/puppeteer@9.0.1/mod.ts";
 export { notify as osNotify } from "https://deno.land/x/notifier@v0.3.1/mod.ts";
-export { DOMParser } from "https://deno.land/x/deno_dom@v0.1.14-alpha/deno-dom-wasm.ts";
 export { config as dotenvConfig } from "https://deno.land/x/dotenv@v3.0.0/mod.ts";
 export {
   Database,
@@ -15,3 +13,5 @@ export {
   Trello,
 } from "https://raw.githubusercontent.com/stillalivx/deno-trello/main/mod.ts";
 export { dirname } from "https://deno.land/std@0.109.0/path/mod.ts";
+export { exec, OutputMode } from "https://deno.land/x/exec@0.0.5/mod.ts";
+export { DOMParser, Element, HTMLDocument, Node } from "https://deno.land/x/deno_dom@v0.1.15-alpha/deno-dom-wasm.ts";

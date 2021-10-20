@@ -1,7 +1,6 @@
 import { Colors, parse } from "../../deps.ts";
-import { closeDatabase, connectDatabase } from "../../database/database.ts";
 import SerieModel from "../../database/models/Serie.ts";
-import Panini from "../../scraping/Panini.js";
+import Panini from "../../scraping/Panini.ts";
 import CollectorStrategy from "../../bot/CollectorStrategy.ts";
 import { getUserConfig } from "../../utils/userConfig.ts";
 import InterfaceError from "../../utils/InterfaceError.ts";
@@ -37,7 +36,7 @@ async function add() {
   }
 
   if (store === "panini" || store === "p") {
-    storeScrapping = new Panini() as unknown as Store;
+    storeScrapping = new Panini();
     storeEnumValue = "panini";
     storeName = "Editorial Panini";
   } else {
@@ -88,8 +87,6 @@ async function add() {
 
   console.log(`💾 ${Colors.green("Guardando la información...")}`);
 
-  const database = await connectDatabase();
-
   const serieExists = await SerieModel.select("id").where({
     name: searchResults[userSerieChoice].name,
     description: searchResults[userSerieChoice].description,
@@ -114,24 +111,19 @@ async function add() {
   console.log(`💾 ${Colors.green("La serie se guardó con éxito...")}`);
   console.log(`📝 ${Colors.green("Actualizando lista...")}`);
 
-  const newProductsPublished = await storeScrapping.getNewSerieProducts({
+  const newProductsPublished = await storeScrapping.getNewProducts({
     id: dbResponse.lastInsertId,
     ...serie,
   });
 
   if (newProductsPublished.length) {
-    await SerieModel
-      .where({ id: dbResponse.lastInsertId })
-      .update({
-        lastNumber:
-          newProductsPublished[newProductsPublished.length - 1].number,
-        lastCheck: new Date(),
-      });
+    await SerieModel.updateLastNumber(
+      dbResponse.lastInsertId,
+      newProductsPublished[newProductsPublished.length - 1].number,
+    );
 
     await collectorStrategy.updateTrelloList(newProductsPublished);
   }
-
-  await closeDatabase(database);
 
   console.log(`✔️ ${Colors.green("Lista actualizada...")}`);
 }

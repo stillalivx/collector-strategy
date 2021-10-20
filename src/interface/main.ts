@@ -1,4 +1,5 @@
 import { dirname, dotenvConfig, parse } from "../deps.ts";
+import { connectDatabase, closeDatabase } from "../database/database.ts";
 import InterfaceError from "../utils/InterfaceError.ts";
 
 import list from "./process/list.ts";
@@ -8,6 +9,8 @@ import edit from "./process/edit.ts";
 import config from "./process/config.ts";
 
 dotenvConfig({ path: `${dirname(Deno.execPath())}/.env`, export: true });
+
+const database = await connectDatabase();
 
 try {
   const args = parse(Deno.args);
@@ -48,5 +51,7 @@ try {
     console.error(e);
   }
 }
+
+await closeDatabase(database);
 
 Deno.exit();
