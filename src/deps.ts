@@ -12,4 +12,8 @@ export {
   ListComponent,
   Trello,
 } from "https://raw.githubusercontent.com/stillalivx/deno-trello/main/mod.ts";
-export { DOMParser, Element, HTMLDocument } from "https://deno.land/x/deno_dom@v0.1.15-alpha/deno-dom-wasm.ts";
+export {
+  DOMParser,
+  Element,
+  HTMLDocument,
+} from "https://deno.land/x/deno_dom@v0.1.15-alpha/deno-dom-wasm.ts";

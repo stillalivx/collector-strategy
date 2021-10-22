@@ -1,5 +1,5 @@
 import { dotenvConfig, parse } from "../deps.ts";
-import { connectDatabase, closeDatabase } from "../database/database.ts";
+import { closeDatabase, connectDatabase } from "../database/database.ts";
 import InterfaceError from "../utils/InterfaceError.ts";
 
 import list from "./process/list.ts";

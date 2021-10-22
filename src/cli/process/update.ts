@@ -1,11 +1,11 @@
-import { osNotify, Colors } from "../../deps.ts";
+import { Colors, osNotify } from "../../deps.ts";
 import SerieModel from "../../database/models/Serie.ts";
 import CollectorStrategy from "../../bot/CollectorStrategy.ts";
 import InterfaceError from "../../utils/InterfaceError.ts";
 import { getUserConfig } from "../../utils/userConfig.ts";
 import Panini from "../../scraping/Panini.ts";
 
-import type { Serie, Product, Store } from "../../types.ts";
+import type { Product, Serie, Store } from "../../types.ts";
 
 async function update() {
   osNotify("CollectorStrategy", "Buscando novedades...")
@@ -29,8 +29,14 @@ async function update() {
     let notificationMsg;
 
     storeScrapping = new Panini();
-    
-    console.log(`${Colors.cyan("- Buscando novedades para")} ${serie.description ? Colors.blue(serie.name + " - " + serie.description) : Colors.blue(serie.name)}${Colors.cyan("...")}`);   
+
+    console.log(
+      `${Colors.cyan("- Buscando novedades para")} ${
+        serie.description
+          ? Colors.blue(serie.name + " - " + serie.description)
+          : Colors.blue(serie.name)
+      }${Colors.cyan("...")}`,
+    );
 
     const serieNewProducts = await storeScrapping.getNewProducts(serie);
 
@@ -40,7 +46,7 @@ async function update() {
     }
 
     console.log(Colors.green("+ Novedades encontradas..."));
-    
+
     if (serieNewProducts.length > 1) {
       notificationMsg =
         `¡Se ha agregado más de un nuevo producto de ${serie.name} - ${serie.description} a la lista!`;
@@ -53,7 +59,7 @@ async function update() {
 
     await SerieModel.updateLastNumber(
       serie.id,
-      serieNewProducts[serieNewProducts.length - 1].number
+      serieNewProducts[serieNewProducts.length - 1].number,
     );
 
     newProducts = newProducts.concat(serieNewProducts);

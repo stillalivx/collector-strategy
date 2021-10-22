@@ -1,25 +1,29 @@
-import { DOMParser, HTMLDocument, Element } from "../deps.ts";
+import { DOMParser, Element, HTMLDocument } from "../deps.ts";
 import curl from "../utils/curl.ts";
 
-import type { Store, Product, Serie } from "../types.ts";
+import type { Product, Serie, Store } from "../types.ts";
 
 class Panini implements Store {
   private getProducts(page: HTMLDocument): Product[] {
     const products: Product[] = [];
-    const nodes = page.querySelectorAll("#search-list .product > .item > .description");
+    const nodes = page.querySelectorAll(
+      "#search-list .product > .item > .description",
+    );
 
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       const product = {
         name: "",
         description: "",
         number: 0,
         url: "",
-        serie: 0
+        serie: 0,
       };
 
       const name = node.childNodes[0].childNodes[0].textContent || "";
       const description = node.childNodes[2].childNodes[0].textContent || "";
-      const url = (node.childNodes[0].childNodes[0] as Element).getAttribute("href") || "";
+      const url =
+        (node.childNodes[0].childNodes[0] as Element).getAttribute("href") ||
+        "";
 
       if (!name || !url) {
         return;
@@ -27,8 +31,8 @@ class Panini implements Store {
 
       product.description = description;
       product.url = url;
-      
-      if (name.match(/\- \#\d+$/)) {                
+
+      if (name.match(/\- \#\d+$/)) {
         product.name = name.substr(0, name.lastIndexOf("-")).trim();
         product.number = parseInt(
           name.substr(name.lastIndexOf("#") + 1).trim(),
@@ -59,24 +63,30 @@ class Panini implements Store {
   }
 
   private getUrlSerie(page: HTMLDocument): string {
-    return (page.querySelectorAll(".cart-actions")[1].childNodes[3] as Element).getAttribute("href") || "";
+    return (page.querySelectorAll(".cart-actions")[1].childNodes[3] as Element)
+      .getAttribute("href") || "";
   }
 
   async search(name: string): Promise<Product[]> {
-    const url = new URL(`https://www.tiendapanini.com.mx/mexico/soluciones/busqueda.aspx?t=${name}&o=4`);
+    const url = new URL(
+      `https://www.tiendapanini.com.mx/mexico/soluciones/busqueda.aspx?t=${name}&o=4`,
+    );
     const request = await curl(url.toString());
     const page = new DOMParser().parseFromString(request, "text/html");
     const products: Product[] = [];
 
     if (!page) {
-      throw new Error("Error al cargar la página de busqueda")
+      throw new Error("Error al cargar la página de busqueda");
     }
 
     const results = this.getProducts(page);
 
-    results.forEach(result => {
+    results.forEach((result) => {
       const productAdded = products
-        .find(product => result.name === product.name && result.description === product.description);
+        .find((product) =>
+          result.name === product.name &&
+          result.description === product.description
+        );
 
       if (!productAdded) {
         products.push(result);
@@ -91,7 +101,9 @@ class Panini implements Store {
     const page = new DOMParser().parseFromString(request, "text/html");
 
     if (!page) {
-      throw new Error("Error al cargar la página para obtener la url de la serie");
+      throw new Error(
+        "Error al cargar la página para obtener la url de la serie",
+      );
     }
 
     const urlSerie = this.getUrlSerie(page);
@@ -108,8 +120,8 @@ class Panini implements Store {
     }
 
     const rawProducts = this.getProducts(page);
-    
-    const products = rawProducts.map(product => {
+
+    const products = rawProducts.map((product) => {
       product.serie = serie.id;
       return product;
     });
@@ -118,7 +130,10 @@ class Panini implements Store {
       return products;
     } else {
       return products
-        .filter(product => product.description === serie.description && product.number > serie.lastNumber)
+        .filter((product) =>
+          product.description === serie.description &&
+          product.number > serie.lastNumber
+        )
         .sort((a, b) => a.number - b.number);
     }
   }
