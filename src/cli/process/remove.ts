@@ -33,17 +33,17 @@ async function remove() {
     );
   }
 
-  console.log(`📝 ${Colors.green("Actualizando lista...")}`);
+  console.log(`${Colors.green("+ Actualizando lista...")}`);
 
   await collectorStrategy.deleteFromTrelloList(serie);
   await collectorStrategy.updateTrelloList([]);
 
-  console.log(`📝 ${Colors.green("Lista actualizada...")}`);
-  console.log(`🚮 ${Colors.green("Eliminando serie...")}`);
+  console.log(`${Colors.green("+ Lista actualizada...")}`);
+  console.log(`${Colors.green("+ Eliminando serie...")}`);
 
   await SerieModel.deleteById(serieToRemove);
 
-  console.log(`✔️ ${Colors.green("Serie eliminada...")}`);
+  console.log(`${Colors.green("+ Serie eliminada...")}`);
 }
 
 export default remove;

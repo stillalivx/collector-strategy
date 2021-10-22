@@ -4,7 +4,7 @@ import SerieModel from "../../database/models/Serie.ts";
 import type { Serie } from "../../types.ts";
 
 async function list() {
-  console.log(`💾 ${Colors.green("Obteniendo las series enlistadas...\n")}`);
+  console.log(`${Colors.green("+ Obteniendo las series enlistadas...\n")}`);
 
   const series = await SerieModel.all() as unknown as Serie[];
 

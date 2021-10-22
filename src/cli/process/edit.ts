@@ -39,7 +39,7 @@ async function edit() {
   console.log(`${Colors.yellow("Actualizando " + serie.name + "...")}\n`);
   const userSerieLastNumber = parseInt(
     prompt(
-      `${Colors.blue("Último tomo adquirido")} ${
+      `${Colors.blue("> Último tomo adquirido")} ${
         Colors.gray("(" + serie.lastNumber + ")")
       }:`,
       "",
@@ -52,14 +52,14 @@ async function edit() {
 
   serie.lastNumber = userSerieLastNumber;
 
-  console.log(`\n💾 ${Colors.green("Guardando la información...")}`);
+  console.log(`\n${Colors.green("+ Guardando la información...")}`);
 
   await SerieModel
     .where({ id: serieToEdit })
     .update({ lastNumber: userSerieLastNumber });
 
-  console.log(`💾 ${Colors.green("La serie se guardó con éxito...")}`);
-  console.log(`📝 ${Colors.green("Actualizando lista...")}`);
+  console.log(`${Colors.green("+ La serie se guardó con éxito...")}`);
+  console.log(`${Colors.green("+ Actualizando lista...")}`);
 
   const newProductsPublished = await storeScrapping.getNewProducts(
     serie,
@@ -78,7 +78,7 @@ async function edit() {
     await collectorStrategy.updateTrelloList(newProductsPublished);
   }
 
-  console.log(`✔️ ${Colors.green("Lista actualizada...")}`);
+  console.log(`${Colors.green("+ Lista actualizada...")}`);
 }
 
 export default edit;

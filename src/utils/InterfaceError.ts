@@ -6,7 +6,7 @@ class InterfaceError extends Error {
   }
 
   toString(): string {
-    return `❌ ${Colors.red(this.message)}`;
+    return `x ${Colors.red(this.message)}`;
   }
 }
 
