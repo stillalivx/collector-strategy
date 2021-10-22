@@ -7,6 +7,7 @@ import add from "./process/add.ts";
 import remove from "./process/remove.ts";
 import edit from "./process/edit.ts";
 import config from "./process/config.ts";
+import update from "./process/update.ts";
 
 dotenvConfig({ path: `${dirname(Deno.execPath())}/.env`, export: true });
 
@@ -35,6 +36,10 @@ try {
 
     case "config":
       await config();
+      break;
+
+    case "update":
+      await update();
       break;
 
     case "version":

@@ -43,7 +43,7 @@ async function add() {
     throw new InterfaceError("La tienda declarada es invalida");
   }
 
-  console.log(Colors.green(`🔍 Buscando "${searchValue}" en ${storeName}`));
+  console.log(Colors.green(`- Buscando "${searchValue}" en ${storeName}`));
 
   const searchResults = await storeScrapping.search(searchValue);
 
@@ -51,7 +51,7 @@ async function add() {
     throw new InterfaceError("No se han encontrado resultados");
   }
 
-  console.log(Colors.green(`🔍 Resultados:\n`));
+  console.log(Colors.green(`- Resultados:\n`));
 
   searchResults.forEach((product, index) => {
     console.log(
@@ -64,7 +64,7 @@ async function add() {
   });
 
   const userSerieChoice = parseInt(
-    prompt(`\n${Colors.blue("Escoger serie:")}`, "") as string,
+    prompt(`\n${Colors.blue("> Escoger serie:")}`, "") as string,
   );
 
   if (isNaN(userSerieChoice)) {
@@ -72,20 +72,20 @@ async function add() {
   }
 
   const userSerieLastNumber = parseInt(
-    prompt(Colors.blue("Último número adquirido:"), "") as string,
+    prompt(Colors.blue("> Último número adquirido:"), "") as string,
   );
 
   if (isNaN(userSerieLastNumber)) {
     return;
   }
 
-  console.log(`\n🔍 ${Colors.green("Obteniendo datos adicionales...")}`);
+  console.log(`\n${Colors.green("+ Obteniendo datos adicionales...")}`);
 
   const serieUrl = await storeScrapping.getProductUrlSerie(
     searchResults[userSerieChoice].url,
   );
 
-  console.log(`💾 ${Colors.green("Guardando la información...")}`);
+  console.log(`${Colors.green("+ Guardando la información...")}`);
 
   const serieExists = await SerieModel.select("id").where({
     name: searchResults[userSerieChoice].name,
@@ -108,13 +108,13 @@ async function add() {
 
   const dbResponse = await SerieModel.add(serie);
 
-  console.log(`💾 ${Colors.green("La serie se guardó con éxito...")}`);
-  console.log(`📝 ${Colors.green("Actualizando lista...")}`);
+  console.log(`${Colors.green("+ La serie se guardó con éxito...")}`);
+  console.log(`${Colors.green("+ Actualizando lista...")}`);
 
   const newProductsPublished = await storeScrapping.getNewProducts({
     id: dbResponse.lastInsertId,
     ...serie,
-  });  
+  });
 
   if (newProductsPublished.length) {
     await SerieModel.updateLastNumber(
