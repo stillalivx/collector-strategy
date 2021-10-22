@@ -6,11 +6,7 @@ allow:
   - env
   - run
 scripts:
-  service:
-    cmd: "deno run ./src/service/main.ts"
   collection:
-    cmd: "deno run ./src/interface/main.ts"
+    cmd: "deno run ./src/cli/main.ts"
   compile-cli:
-    cmd: "deno compile --output collection --allow-net --allow-env --allow-write --allow-read --allow-run --unstable ./src/interface/main.ts"
-  compile-service:
-    cmd: "deno compile --output collection-service --allow-net --allow-env --allow-write --allow-read --allow-run --unstable ./src/service/main.ts"
+    cmd: "deno compile --output collection --allow-net --allow-env --allow-write --allow-read --allow-run --unstable ./src/cli/main.ts"
