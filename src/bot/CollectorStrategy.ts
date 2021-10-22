@@ -110,42 +110,6 @@ class CollectorStrategy {
     return sortedCards;
   }
 
-  async updateSeriesProducts(series: Serie[]) {
-    const storeScrapping: Store = new Panini();
-    let newProducts: Product[] = [];
-    let notificationMsg = "";
-
-    for (let i = 0; i < series.length; i++) {
-      const serie = series[i];
-      const newSeriesProducts = await storeScrapping.getNewProducts(serie);
-
-      if (!newSeriesProducts.length) {
-        continue;
-      }
-
-      if (newSeriesProducts.length > 1) {
-        notificationMsg =
-          `¡Se ha agregado más de un nuevo producto de ${serie.name} a la lista!`;
-      } else {
-        notificationMsg =
-          `¡Se ha agregado un nuevo producto de ${serie.name} a la lista!`;
-      }
-
-      osNotify("CollectorStrategy", notificationMsg).catch(() => {});
-      
-      await SerieModel.updateLastNumber(
-        serie.id,
-        newSeriesProducts[newSeriesProducts.length - 1].number
-      );
-
-      newProducts = newProducts.concat(newSeriesProducts);
-    }
-
-    if (newProducts.length) {
-      await this.updateTrelloList(newProducts);
-    }
-  }
-
   async updateTrelloList(products: Product[]) {
     const series: Product[][] = [];
     const listCards = await this.trelloList.getCards();
