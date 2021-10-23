@@ -55,7 +55,7 @@ async function add() {
 
   searchResults.forEach((product, index) => {
     console.log(
-      `${Colors.blue(`${index}.`)} ${Colors.yellow(product.name as string)} ${
+      `${Colors.cyan(`${index}.`)} ${Colors.yellow(product.name as string)} ${
         product.description
           ? Colors.gray("- ") + Colors.cyan(product.description as string)
           : ""
@@ -117,15 +117,23 @@ async function add() {
   });
 
   if (newProductsPublished.length) {
+    let newLastNumber;
+
+    if (newProductsPublished.length === 1 && newProductsPublished[0].number === 0) {
+      newLastNumber = 1;
+    } else {
+      newLastNumber = newProductsPublished[newProductsPublished.length - 1].number;
+    }
+    
     await SerieModel.updateLastNumber(
       dbResponse.lastInsertId,
-      newProductsPublished[newProductsPublished.length - 1].number,
+      newLastNumber
     );
 
     await collectorStrategy.updateTrelloList(newProductsPublished);
   }
 
-  console.log(`✔️ ${Colors.green("Lista actualizada...")}`);
+  console.log(`${Colors.green("+ Lista actualizada...")}`);
 }
 
 export default add;
