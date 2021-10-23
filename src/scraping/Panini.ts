@@ -126,7 +126,7 @@ class Panini implements Store {
       return product;
     });
 
-    if (products.length === 1 && products[0].number === serie.lastNumber) {
+    if (products.length === 1 && products[0].number === 0 && serie.lastNumber === 0) {
       return products;
     } else {
       return products
