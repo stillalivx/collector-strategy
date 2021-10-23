@@ -29,8 +29,8 @@ class Panini implements Store {
         return;
       }
 
-      product.description = description;
-      product.url = url;
+      product.description = description.trim();
+      product.url = url.trim();
 
       if (name.match(/\- \#\d+$/)) {
         product.name = name.substr(0, name.lastIndexOf("-")).trim();
@@ -53,7 +53,7 @@ class Panini implements Store {
           name.substr(name.lastIndexOf(".") + 1).trim(),
         );
       } else {
-        product.name = name;
+        product.name = name.trim();
       }
 
       products.push(product);
@@ -126,7 +126,7 @@ class Panini implements Store {
       return product;
     });
 
-    if (products.length === 1 && products[0].number === 0) {
+    if (products.length === 1 && products[0].number === serie.lastNumber) {
       return products;
     } else {
       return products

@@ -168,7 +168,6 @@ class CollectorStrategy {
   }
 
   async deleteFromTrelloList(serie: Serie) {
-    const products: Product[] = [];
     const listCards = await this.trelloList.getCards();
 
     for (let i = 0; i < listCards.length; i++) {

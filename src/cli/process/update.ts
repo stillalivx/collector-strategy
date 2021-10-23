@@ -49,7 +49,7 @@ async function update() {
 
     if (serieNewProducts.length > 1) {
       notificationMsg =
-        `¡Se ha agregado más de un nuevo producto de ${serie.name} - ${serie.description} a la lista!`;
+        `¡Se ha agregado más de un nuevo producto de ${serie.name}${serie.description ? " - " + serie.description : ""} a la lista!`;
     } else {
       notificationMsg =
         `¡Se ha agregado un nuevo producto de ${serie.name} - ${serie.description} a la lista!`;
