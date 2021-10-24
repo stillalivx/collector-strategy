@@ -43,7 +43,7 @@ try {
       break;
 
     case "version":
-      console.log("Version: 0.4.1");
+      console.log("Version: 1.0.2");
       break;
 
     default:
